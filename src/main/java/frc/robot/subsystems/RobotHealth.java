@@ -9,8 +9,6 @@ import frc.robot.FieldConstants;
 import frc.robot.FlipUtil;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.Vision;
-import gg.questnav.questnav.QuestNav;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotHealth extends SubsystemBase {
@@ -68,7 +66,7 @@ public class RobotHealth extends SubsystemBase {
     determineFieldState();
     updateZones();
 
-    inActiveShift = HubTracker.isActive();
+    inActiveShift = ShiftTracker.isActive();
 
     lastPose2d = newPose2d; // prep for next periodic;
   }
@@ -208,8 +206,8 @@ public class RobotHealth extends SubsystemBase {
     double yawError =
         Math.abs(
             m_Drivetrain
-                .getHeading()
-                .minus(m_QuestNaviman.questRobotPose2d.getRotation())
+                .getRotation()
+                .minus(m_QuestNav.questRobotPose2d.getRotation())
                 .getDegrees());
 
     return yawError > Constants.YawWarningTolerance;
