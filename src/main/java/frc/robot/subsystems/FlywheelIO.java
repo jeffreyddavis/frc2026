@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
+
 import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.Logger;
 
 public interface FlywheelIO {
   @AutoLog
@@ -15,5 +15,6 @@ public interface FlywheelIO {
   void updateInputs(FlywheelIOInputs inputs);
 
   void setOpenLoopVolts(double volts);
+
   void setVelocityRPS(double rps);
 }

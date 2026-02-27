@@ -13,22 +13,18 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.*;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.vision.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -43,7 +39,36 @@ public class RobotContainer {
   private final Vision vision;
 
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandXboxController controller = new CommandXboxController(1);
+  private final Joystick stick = new Joystick(0);
+
+  // Buttons
+  private final JoystickButton trigger = new JoystickButton(stick, 1);
+  private final JoystickButton toggleAuto = new JoystickButton(stick, 2);
+
+  private final JoystickButton intakeIn = new JoystickButton(stick, 3);
+  private final JoystickButton intakeReverse = new JoystickButton(stick, 4);
+
+  private final JoystickButton deployArm = new JoystickButton(stick, 5);
+  private final JoystickButton retractArm = new JoystickButton(stick, 6);
+
+  private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
+  private final JoystickButton manualLoader = new JoystickButton(stick, 8);
+
+  private final JoystickButton hoodUp = new JoystickButton(stick, 9);
+  private final JoystickButton hoodDown = new JoystickButton(stick, 10);
+
+  private final JoystickButton shooterEnable = new JoystickButton(stick, 11);
+  private final JoystickButton passMode = new JoystickButton(stick, 12);
+
+  private final ShootingCoordinator coordinator;
+  private final Shooter shooter;
+  private final Turret turret;
+  private final Hood hood;
+  private final Intake intake;
+  private final Loader loader;
+  private final Spindexer spindexer;
+  public final QuestNavSub m_QuestNav;
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -112,6 +137,20 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    m_QuestNav = new QuestNavSub(drive);
+
+    // Instantiate subsystems
+    shooter = new Shooter();
+    turret = new Turret();
+    hood = new Hood();
+    intake = new Intake();
+    loader = new Loader();
+    spindexer = new Spindexer();
+
+    RobotHealth robotHealth = new RobotHealth(drive, m_QuestNav, vision);
+
+    coordinator = new ShootingCoordinator(shooter, turret, hood, loader, spindexer, robotHealth);
 
     // Configure the button bindings
     configureButtonBindings();

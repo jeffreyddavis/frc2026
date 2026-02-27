@@ -1,13 +1,12 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.*;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -18,15 +17,12 @@ public class Shooter extends SubsystemBase {
 
   // Control requests (reuse objects)
   private final VoltageOut voltageOut = new VoltageOut(0.0);
-  private final VelocityTorqueCurrentFOC velocityFOC =
-      new VelocityTorqueCurrentFOC(0.0);
+  private final VelocityTorqueCurrentFOC velocityFOC = new VelocityTorqueCurrentFOC(0.0);
 
   // AdvantageKit tunables
-  private final LoggedNetworkNumber kP =
-      new LoggedNetworkNumber("Shooter/kP", 0.1);
+  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", 0.1);
 
-  private final LoggedNetworkNumber kD =
-      new LoggedNetworkNumber("Shooter/kD", 0.0);
+  private final LoggedNetworkNumber kD = new LoggedNetworkNumber("Shooter/kD", 0.0);
 
   private final LoggedNetworkNumber targetRPM =
       new LoggedNetworkNumber("Shooter/TargetRPM", 2000.0);
@@ -42,9 +38,9 @@ public class Shooter extends SubsystemBase {
   // Config object reused
   private final TalonFXConfiguration config = new TalonFXConfiguration();
 
-  public Shooter(int leaderId, int followerId) {
-    leader = new TalonFX(leaderId);
-    follower = new TalonFX(followerId);
+  public Shooter() {
+    leader = new TalonFX(Constants.Shooter.LeftMotor);
+    follower = new TalonFX(Constants.Shooter.RightMotor);
 
     // Basic config
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -96,8 +92,7 @@ public class Shooter extends SubsystemBase {
     double currentKP = kP.get();
     double currentKD = kD.get();
 
-    if (Math.abs(currentKP - lastKP) > 1e-6 ||
-        Math.abs(currentKD - lastKD) > 1e-6) {
+    if (Math.abs(currentKP - lastKP) > 1e-6 || Math.abs(currentKD - lastKD) > 1e-6) {
 
       config.Slot0.kP = currentKP;
       config.Slot0.kD = currentKD;
@@ -116,12 +111,9 @@ public class Shooter extends SubsystemBase {
 
     Logger.recordOutput("Shooter/VelocityRPM", velocityRPM);
     Logger.recordOutput("Shooter/TargetRPM", lastTargetRPS * 60.0);
-    Logger.recordOutput("Shooter/StatorCurrent",
-        leader.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Shooter/SupplyCurrent",
-        leader.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Shooter/AppliedVolts",
-        leader.getMotorVoltage().getValueAsDouble());
+    Logger.recordOutput("Shooter/StatorCurrent", leader.getStatorCurrent().getValueAsDouble());
+    Logger.recordOutput("Shooter/SupplyCurrent", leader.getSupplyCurrent().getValueAsDouble());
+    Logger.recordOutput("Shooter/AppliedVolts", leader.getMotorVoltage().getValueAsDouble());
     Logger.recordOutput("Shooter/ClosedLoop", closedLoop);
   }
 
