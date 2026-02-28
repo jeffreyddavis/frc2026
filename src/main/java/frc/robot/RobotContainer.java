@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -194,6 +196,106 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    /* ================= AUTO MODE ================= */
+
+        toggleAuto.onTrue(
+            new InstantCommand(() ->
+                coordinator.setMode(
+                    ShootingCoordinator.ShootingMode.AUTO_AIM
+                )
+            )
+        );
+
+        /* ================= SHOOT REQUEST ================= */
+
+        trigger.onTrue(
+            new InstantCommand(() ->
+                coordinator.setRequestShot(true)
+            )
+        );
+
+        trigger.onFalse(
+            new InstantCommand(() ->
+                coordinator.setRequestShot(false)
+            )
+        );
+
+        /* ================= INTAKE ================= */
+
+        intakeIn.whileTrue(
+            new RunCommand(() -> {
+                intake.intake();
+                spindexer.feed();
+            })
+        ).onFalse(
+            new InstantCommand(() -> {
+                intake.stopRollers();
+                spindexer.stop();
+            })
+        );
+
+        intakeReverse.whileTrue(
+            new RunCommand(() -> {
+                intake.outtake();
+                spindexer.reverse();
+            })
+        ).onFalse(
+            new InstantCommand(() -> {
+                intake.stopRollers();
+                spindexer.stop();
+            })
+        );
+
+        /* ================= ARM ================= */
+
+        deployArm.whileTrue(
+            new RunCommand(() -> intake.deploy())
+        ).onFalse(
+            new InstantCommand(() -> intake.stopArm())
+        );
+
+        retractArm.whileTrue(
+            new RunCommand(() -> intake.retract())
+        ).onFalse(
+            new InstantCommand(() -> intake.stopArm())
+        );
+
+        /* ================= MANUAL OVERRIDES ================= */
+
+        manualSpindexer.whileTrue(
+            new RunCommand(() -> spindexer.feed())
+        ).onFalse(
+            new InstantCommand(() -> spindexer.stop())
+        );
+
+        manualLoader.whileTrue(
+            new RunCommand(() -> loader.feed())
+        ).onFalse(
+            new InstantCommand(() -> loader.stop())
+        );
+
+        hoodUp.whileTrue(
+            new RunCommand(() -> hood.incrementUp())
+        );
+
+        hoodDown.whileTrue(
+            new RunCommand(() -> hood.incrementDown())
+        );
+
+        shooterEnable.whileTrue(
+            new RunCommand(() -> shooter.enableClosedLoop())
+        ).onFalse(
+            new InstantCommand(() -> shooter.disable())
+        );
+
+        passMode.onTrue(
+            new InstantCommand(() ->
+                coordinator.setMode(
+                    ShootingCoordinator.ShootingMode.AUTO_AIM
+                )
+            )
+        );
   }
 
   /**
