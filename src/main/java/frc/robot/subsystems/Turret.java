@@ -54,6 +54,9 @@ public class Turret extends SubsystemBase {
     encoder.getConfigurator().apply(config);
   }
 
+  public boolean isAtSetpoint() {
+    
+  }
   /* ===================== Public Control ===================== */
 
   public void enableClosedLoop() {

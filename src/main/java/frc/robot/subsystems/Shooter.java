@@ -144,4 +144,8 @@ public class Shooter extends SubsystemBase {
   public double getVelocityRPM() {
     return leader.getVelocity().getValueAsDouble() * 60.0;
   }
+
+  public boolean isAtSetpoint() {
+    return 
+  }
 }
