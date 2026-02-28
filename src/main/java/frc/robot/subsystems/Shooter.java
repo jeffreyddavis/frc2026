@@ -127,6 +127,11 @@ public class Shooter extends SubsystemBase {
     leader.setControl(voltageOut.withOutput(volts));
   }
 
+  public void jogPercent(double percent) {
+    closedLoop = false;
+    leader.setControl(voltageOut.withOutput(percent * 12.0));
+  }
+
   public void enableClosedLoop() {
     closedLoop = true;
   }
