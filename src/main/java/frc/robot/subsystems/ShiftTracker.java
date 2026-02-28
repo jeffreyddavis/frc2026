@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.Optional;
 
-public class HubTracker {
+public class ShiftTracker {
     /**
      * Returns an {@link Optional} containing the current {@link Shift}.
      * Will return {@link Optional#empty()} if disabled or in between auto and teleop.
