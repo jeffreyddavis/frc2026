@@ -7,7 +7,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.SparkFlex; // NEO Vortex controller (adjust if needed)
+import com.revrobotics.spark.SparkFlex;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -15,25 +15,20 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Intake extends SubsystemBase {
 
+  private final boolean hardwareEnabled = Constants.Intake.HardwareEnabled;
+
   /* ===================== Hardware ===================== */
 
-  // Arm motors (Kraken X44)
-  private final TalonFX armLeader = new TalonFX(Constants.Intake.ArmLeader);
-
-  private final TalonFX armFollower = new TalonFX(Constants.Intake.ArmFollower);
+  private TalonFX armLeader;
+  private TalonFX armFollower;
 
   private final VoltageOut armVoltage = new VoltageOut(0.0);
 
-  // Roller motors (NEO Vortex)
-  private final SparkFlex rollerLeft =
-      new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
-
-  private final SparkFlex rollerRight =
-      new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
+  private SparkFlex rollerLeft;
+  private SparkFlex rollerRight;
 
   /* ===================== Tunables ===================== */
 
-  // Arm speeds
   private final LoggedNetworkNumber deployPercent =
       new LoggedNetworkNumber("Intake/ArmDeployPercent", 0.5);
 
@@ -43,7 +38,6 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber armCurrentLimit =
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
 
-  // Roller speeds
   private final LoggedNetworkNumber intakePercent =
       new LoggedNetworkNumber("Intake/RollerIntakePercent", 0.7);
 
@@ -57,12 +51,25 @@ public class Intake extends SubsystemBase {
 
   private double armCommanded = 0.0;
   private double rollerCommanded = 0.0;
-
-  private double lastArmLimit;
+  private double lastArmLimit = 0.0;
 
   public Intake() {
-    configureArmMotors();
-    configureRollers();
+
+    if (hardwareEnabled) {
+      armLeader = new TalonFX(Constants.Intake.ArmLeader);
+      armFollower = new TalonFX(Constants.Intake.ArmFollower);
+
+      rollerLeft =
+          new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
+
+      rollerRight =
+          new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
+
+      configureArmMotors();
+      configureRollers();
+
+      lastArmLimit = armCurrentLimit.get();
+    }
   }
 
   /* ===================== Configuration ===================== */
@@ -75,20 +82,13 @@ public class Intake extends SubsystemBase {
     armLeader.getConfigurator().apply(baseConfig);
     armFollower.getConfigurator().apply(baseConfig);
 
-    CurrentLimitsConfigs limits =
-        new CurrentLimitsConfigs()
-            .withSupplyCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(armCurrentLimit.get());
+    applyArmCurrentLimit(armCurrentLimit.get());
 
-    armLeader.getConfigurator().apply(limits);
-    armFollower.getConfigurator().apply(limits);
-
-    armFollower.setControl(new Follower(armLeader.getDeviceID(), MotorAlignmentValue.Opposed));
+    armFollower.setControl(
+        new Follower(armLeader.getDeviceID(), MotorAlignmentValue.Opposed));
 
     armLeader.getSupplyCurrent().setUpdateFrequency(100);
     armLeader.optimizeBusUtilization();
-
-    lastArmLimit = armCurrentLimit.get();
   }
 
   private void configureRollers() {
@@ -101,27 +101,32 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
 
-    // Live-update arm current limit if changed
-    double newLimit = armCurrentLimit.get();
-    if (Math.abs(newLimit - lastArmLimit) > 1e-6) {
+    if (hardwareEnabled) {
 
-      CurrentLimitsConfigs limits =
-          new CurrentLimitsConfigs()
-              .withSupplyCurrentLimitEnable(true)
-              .withSupplyCurrentLimit(newLimit);
-
-      armLeader.getConfigurator().apply(limits);
-      armFollower.getConfigurator().apply(limits);
-
-      lastArmLimit = newLimit;
+      double newLimit = armCurrentLimit.get();
+      if (Math.abs(newLimit - lastArmLimit) > 1e-6) {
+        applyArmCurrentLimit(newLimit);
+        lastArmLimit = newLimit;
+      }
     }
 
     logTelemetry();
   }
 
+  private void applyArmCurrentLimit(double limit) {
+
+    CurrentLimitsConfigs limits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(limit);
+
+    armLeader.getConfigurator().apply(limits);
+    armFollower.getConfigurator().apply(limits);
+  }
+
   /* ===================== Public Control ===================== */
 
-  // Arm control
+  // Arm
   public void deploy() {
     armCommanded = deployPercent.get();
     setArmPercent(armCommanded);
@@ -138,11 +143,13 @@ public class Intake extends SubsystemBase {
   }
 
   private void setArmPercent(double percent) {
+    if (!hardwareEnabled) return;
+
     armVoltage.Output = percent * 12.0;
     armLeader.setControl(armVoltage);
   }
 
-  // Roller control
+  // Rollers
   public void intake() {
     rollerCommanded = intakePercent.get();
     setRollerPercent(rollerCommanded);
@@ -164,6 +171,8 @@ public class Intake extends SubsystemBase {
   }
 
   private void setRollerPercent(double percent) {
+    if (!hardwareEnabled) return;
+
     rollerLeft.set(percent);
     rollerRight.set(percent);
   }
@@ -172,11 +181,22 @@ public class Intake extends SubsystemBase {
 
   private void logTelemetry() {
 
-    Logger.recordOutput("Intake/ArmPercent", armCommanded);
-    Logger.recordOutput("Intake/ArmSupplyCurrent", armLeader.getSupplyCurrent().getValueAsDouble());
+    double armSupplyCurrent = 0.0;
+    double rollerLeftCurrent = 0.0;
+    double rollerRightCurrent = 0.0;
 
+    if (hardwareEnabled) {
+      armSupplyCurrent =
+          armLeader.getSupplyCurrent().getValueAsDouble();
+      rollerLeftCurrent = rollerLeft.getOutputCurrent();
+      rollerRightCurrent = rollerRight.getOutputCurrent();
+    }
+
+    Logger.recordOutput("Intake/ArmPercent", armCommanded);
+    Logger.recordOutput("Intake/ArmSupplyCurrent", armSupplyCurrent);
     Logger.recordOutput("Intake/RollerPercent", rollerCommanded);
-    Logger.recordOutput("Intake/RollerLeftCurrent", rollerLeft.getOutputCurrent());
-    Logger.recordOutput("Intake/RollerRightCurrent", rollerRight.getOutputCurrent());
+    Logger.recordOutput("Intake/RollerLeftCurrent", rollerLeftCurrent);
+    Logger.recordOutput("Intake/RollerRightCurrent", rollerRightCurrent);
+    Logger.recordOutput("Intake/HardwareEnabled", hardwareEnabled);
   }
 }

@@ -46,14 +46,21 @@ public final class Constants {
     public static final double FORBIDDEN_LIMIT_DEG = 180.0;
     public static final double FORBIDDEN_BUFFER_DEG = 5.0; // safety margin
     public static final double GEAR_RATIO = 45.0; // example
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Loader {
     public static final int Motor = 30;
+    public static final boolean HardwareEnabled = false;
+  }
+
+  public static final class Hood {
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Spindexer {
     public static final int Motor = 40;
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Intake {
@@ -61,10 +68,13 @@ public final class Constants {
     public static final int ArmFollower = 51;
     public static final int RollerLeft = 52;
     public static final int RollerRight = 53;
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Shooter {
     public static final int LeftMotor = 60;
     public static final int RightMotor = 61;
+    public static final double RPSTolerance = 5.0;
+    public static final boolean HardwareEnabled = false;
   }
 }

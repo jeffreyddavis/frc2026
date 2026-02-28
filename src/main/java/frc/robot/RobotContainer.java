@@ -21,10 +21,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -57,11 +59,16 @@ public class RobotContainer {
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
   private final JoystickButton manualLoader = new JoystickButton(stick, 8);
 
-  private final JoystickButton hoodUp = new JoystickButton(stick, 9);
-  private final JoystickButton hoodDown = new JoystickButton(stick, 10);
+  private final POVButton hoodUp = new POVButton(stick, 180);
+  private final POVButton hoodDown = new POVButton(stick, 0);
 
-  private final JoystickButton shooterEnable = new JoystickButton(stick, 11);
-  private final JoystickButton passMode = new JoystickButton(stick, 12);
+  private final POVButton turretRight = new POVButton(stick, 90);
+  private final POVButton turretLeft = new POVButton(stick, 270);
+
+  private final JoystickButton shooterEnable = new JoystickButton(stick, 9);
+  private final JoystickButton passMode = new JoystickButton(stick, 10);
+
+  private final JoystickButton resetGyro = new JoystickButton(stick, 14);
 
   private final ShootingCoordinator coordinator;
   private final Shooter shooter;
@@ -172,18 +179,19 @@ public class RobotContainer {
     // Switch to X pattern when X button is pressed
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    // Reset gyro to 0° when B button is pressed
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                    drive)
-                .ignoringDisable(true));
+    controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
+    controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
+    shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable()));
 
-    /* ================= AUTO MODE ================= */
+    // Reset gyro to 0° when B button is pressed
+    resetGyro.onTrue(Commands.runOnce(
+            () ->
+                drive.setPose(
+                    new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+            drive)
+        .ignoringDisable(true));
+
+    /* ================= AUTO AIM MODE ================= */
 
         toggleAuto.onTrue(
             new InstantCommand(() ->
@@ -262,11 +270,20 @@ public class RobotContainer {
         );
 
         hoodUp.whileTrue(
-            new RunCommand(() -> hood.incrementUp())
+            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);hood.incrementUp();})
+            
         );
 
         hoodDown.whileTrue(
-            new RunCommand(() -> hood.incrementDown())
+            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);hood.incrementDown();})
+        );
+
+        turretLeft.whileTrue(
+            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);turret.jogLeft();}, turret)
+        );
+
+        turretRight.whileTrue(
+            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);turret.jogRight();}, turret)
         );
 
         shooterEnable.whileTrue(

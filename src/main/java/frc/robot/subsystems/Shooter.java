@@ -12,17 +12,22 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Shooter extends SubsystemBase {
 
-  private final TalonFX leader;
-  private final TalonFX follower;
+  private final boolean hardwareEnabled = Constants.Shooter.HardwareEnabled;
+
+  private TalonFX leader;
+  private TalonFX follower;
 
   // Control requests (reuse objects)
   private final VoltageOut voltageOut = new VoltageOut(0.0);
-  private final VelocityTorqueCurrentFOC velocityFOC = new VelocityTorqueCurrentFOC(0.0);
+  private final VelocityTorqueCurrentFOC velocityFOC =
+      new VelocityTorqueCurrentFOC(0.0);
 
   // AdvantageKit tunables
-  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", 0.1);
+  private final LoggedNetworkNumber kP =
+      new LoggedNetworkNumber("Shooter/kP", 0.1);
 
-  private final LoggedNetworkNumber kD = new LoggedNetworkNumber("Shooter/kD", 0.0);
+  private final LoggedNetworkNumber kD =
+      new LoggedNetworkNumber("Shooter/kD", 0.0);
 
   private final LoggedNetworkNumber targetRPM =
       new LoggedNetworkNumber("Shooter/TargetRPM", 2000.0);
@@ -35,39 +40,43 @@ public class Shooter extends SubsystemBase {
   private boolean closedLoop = false;
   private double lastTargetRPS = 0.0;
 
-  // Config object reused
+  // Config reused
   private final TalonFXConfiguration config = new TalonFXConfiguration();
 
   public Shooter() {
-    leader = new TalonFX(Constants.Shooter.LeftMotor);
-    follower = new TalonFX(Constants.Shooter.RightMotor);
 
-    // Basic config
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    if (hardwareEnabled) {
+      leader = new TalonFX(Constants.Shooter.LeftMotor);
+      follower = new TalonFX(Constants.Shooter.RightMotor);
 
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 45;
+      // Basic config
+      config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 110;
+      config.CurrentLimits.SupplyCurrentLimitEnable = true;
+      config.CurrentLimits.SupplyCurrentLimit = 45;
 
-    // Initial gains
-    config.Slot0.kP = kP.get();
-    config.Slot0.kD = kD.get();
-    config.Slot0.kI = 0.0;
+      config.CurrentLimits.StatorCurrentLimitEnable = true;
+      config.CurrentLimits.StatorCurrentLimit = 110;
 
-    leader.getConfigurator().apply(config);
-    follower.getConfigurator().apply(config);
+      // Initial gains
+      config.Slot0.kP = kP.get();
+      config.Slot0.kD = kD.get();
+      config.Slot0.kI = 0.0;
 
-    // Follower
-    follower.setControl(new Follower(leader.getDeviceID(), MotorAlignmentValue.Opposed));
+      leader.getConfigurator().apply(config);
+      follower.getConfigurator().apply(config);
 
-    // Faster velocity updates for logging
-    leader.getVelocity().setUpdateFrequency(100);
-    leader.getStatorCurrent().setUpdateFrequency(100);
-    leader.getSupplyCurrent().setUpdateFrequency(100);
-    leader.getMotorVoltage().setUpdateFrequency(100);
-    leader.optimizeBusUtilization();
+      // Follower
+      follower.setControl(
+          new Follower(leader.getDeviceID(), MotorAlignmentValue.Opposed));
+
+      // Faster status updates
+      leader.getVelocity().setUpdateFrequency(100);
+      leader.getStatorCurrent().setUpdateFrequency(100);
+      leader.getSupplyCurrent().setUpdateFrequency(100);
+      leader.getMotorVoltage().setUpdateFrequency(100);
+      leader.optimizeBusUtilization();
+    }
 
     lastKP = kP.get();
     lastKD = kD.get();
@@ -78,7 +87,7 @@ public class Shooter extends SubsystemBase {
 
     updateGainsIfChanged();
 
-    if (closedLoop) {
+    if (hardwareEnabled && closedLoop) {
       double rpm = targetRPM.get();
       double rps = rpm / 60.0;
       lastTargetRPS = rps;
@@ -92,13 +101,15 @@ public class Shooter extends SubsystemBase {
     double currentKP = kP.get();
     double currentKD = kD.get();
 
-    if (Math.abs(currentKP - lastKP) > 1e-6 || Math.abs(currentKD - lastKD) > 1e-6) {
+    if (Math.abs(currentKP - lastKP) > 1e-6 ||
+        Math.abs(currentKD - lastKD) > 1e-6) {
 
-      config.Slot0.kP = currentKP;
-      config.Slot0.kD = currentKD;
-      config.Slot0.kI = 0.0;
-
-      leader.getConfigurator().apply(config);
+      if (hardwareEnabled) {
+        config.Slot0.kP = currentKP;
+        config.Slot0.kD = currentKD;
+        config.Slot0.kI = 0.0;
+        leader.getConfigurator().apply(config);
+      }
 
       lastKP = currentKP;
       lastKD = currentKD;
@@ -106,15 +117,27 @@ public class Shooter extends SubsystemBase {
   }
 
   private void logTelemetry() {
-    double velocityRPS = leader.getVelocity().getValueAsDouble();
-    double velocityRPM = velocityRPS * 60.0;
+
+    double velocityRPM = 0.0;
+    double statorCurrent = 0.0;
+    double supplyCurrent = 0.0;
+    double appliedVolts = 0.0;
+
+    if (hardwareEnabled) {
+      double velocityRPS = leader.getVelocity().getValueAsDouble();
+      velocityRPM = velocityRPS * 60.0;
+      statorCurrent = leader.getStatorCurrent().getValueAsDouble();
+      supplyCurrent = leader.getSupplyCurrent().getValueAsDouble();
+      appliedVolts = leader.getMotorVoltage().getValueAsDouble();
+    }
 
     Logger.recordOutput("Shooter/VelocityRPM", velocityRPM);
     Logger.recordOutput("Shooter/TargetRPM", lastTargetRPS * 60.0);
-    Logger.recordOutput("Shooter/StatorCurrent", leader.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Shooter/SupplyCurrent", leader.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Shooter/AppliedVolts", leader.getMotorVoltage().getValueAsDouble());
+    Logger.recordOutput("Shooter/StatorCurrent", statorCurrent);
+    Logger.recordOutput("Shooter/SupplyCurrent", supplyCurrent);
+    Logger.recordOutput("Shooter/AppliedVolts", appliedVolts);
     Logger.recordOutput("Shooter/ClosedLoop", closedLoop);
+    Logger.recordOutput("Shooter/HardwareEnabled", hardwareEnabled);
   }
 
   // =====================
@@ -124,12 +147,18 @@ public class Shooter extends SubsystemBase {
   public void setOpenLoopVolts(double volts) {
     closedLoop = false;
     lastTargetRPS = 0.0;
-    leader.setControl(voltageOut.withOutput(volts));
+
+    if (hardwareEnabled) {
+      leader.setControl(voltageOut.withOutput(volts));
+    }
   }
 
   public void jogPercent(double percent) {
     closedLoop = false;
-    leader.setControl(voltageOut.withOutput(percent * 12.0));
+
+    if (hardwareEnabled) {
+      leader.setControl(voltageOut.withOutput(percent * 12.0));
+    }
   }
 
   public void enableClosedLoop() {
@@ -138,14 +167,22 @@ public class Shooter extends SubsystemBase {
 
   public void disable() {
     closedLoop = false;
-    leader.setControl(voltageOut.withOutput(0.0));
+
+    if (hardwareEnabled) {
+      leader.setControl(voltageOut.withOutput(0.0));
+    }
   }
 
   public double getVelocityRPM() {
+    if (!hardwareEnabled) return 0.0;
     return leader.getVelocity().getValueAsDouble() * 60.0;
   }
 
   public boolean isAtSetpoint() {
-    return 
+    if (!hardwareEnabled) return false;
+
+    double velocityRPS = leader.getVelocity().getValueAsDouble();
+    return Math.abs(velocityRPS - lastTargetRPS)
+        < Constants.Shooter.RPSTolerance;
   }
 }

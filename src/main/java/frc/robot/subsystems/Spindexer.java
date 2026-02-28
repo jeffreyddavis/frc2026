@@ -12,7 +12,9 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Spindexer extends SubsystemBase {
 
-  private final TalonFX motor = new TalonFX(Constants.Spindexer.Motor);
+  private final boolean hardwareEnabled = Constants.Spindexer.HardwareEnabled;
+
+  private TalonFX motor;
   private final VoltageOut voltageOut = new VoltageOut(0.0);
 
   /* ===================== Tunables ===================== */
@@ -33,9 +35,15 @@ public class Spindexer extends SubsystemBase {
 
   private double commandedPercent = 0.0;
   private boolean running = false;
+  private double lastAppliedCurrentLimit = 0.0;
 
   public Spindexer() {
-    configureMotor();
+
+    if (hardwareEnabled) {
+      motor = new TalonFX(Constants.Spindexer.Motor);
+      configureMotor();
+      lastAppliedCurrentLimit = supplyCurrentLimit.get();
+    }
   }
 
   private void configureMotor() {
@@ -43,12 +51,7 @@ public class Spindexer extends SubsystemBase {
     baseConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motor.getConfigurator().apply(baseConfig);
 
-    CurrentLimitsConfigs limits =
-        new CurrentLimitsConfigs()
-            .withSupplyCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(supplyCurrentLimit.get());
-
-    motor.getConfigurator().apply(limits);
+    applyCurrentLimit(supplyCurrentLimit.get());
 
     motor.getVelocity().setUpdateFrequency(100);
     motor.getSupplyCurrent().setUpdateFrequency(100);
@@ -58,6 +61,16 @@ public class Spindexer extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    // Live-update current limit if changed
+    double newLimit = supplyCurrentLimit.get();
+    if (hardwareEnabled &&
+        Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
+
+      applyCurrentLimit(newLimit);
+      lastAppliedCurrentLimit = newLimit;
+    }
+
     logTelemetry();
   }
 
@@ -94,23 +107,41 @@ public class Spindexer extends SubsystemBase {
   }
 
   private void applyPercent(double percent) {
+    if (!hardwareEnabled) return;
+
     voltageOut.Output = percent * 12.0;
     motor.setControl(voltageOut);
+  }
+
+  private void applyCurrentLimit(double limit) {
+    CurrentLimitsConfigs limits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(limit);
+
+    motor.getConfigurator().apply(limits);
   }
 
   /* ===================== Logging ===================== */
 
   private void logTelemetry() {
-    Logger.recordOutput("Spindexer/VelocityRPS", motor.getVelocity().getValueAsDouble());
 
-    Logger.recordOutput("Spindexer/VelocityRPM", motor.getVelocity().getValueAsDouble() * 60.0);
+    double velocityRPS = 0.0;
+    double supplyCurrent = 0.0;
+    double statorCurrent = 0.0;
 
-    Logger.recordOutput("Spindexer/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
+    if (hardwareEnabled) {
+      velocityRPS = motor.getVelocity().getValueAsDouble();
+      supplyCurrent = motor.getSupplyCurrent().getValueAsDouble();
+      statorCurrent = motor.getStatorCurrent().getValueAsDouble();
+    }
 
-    Logger.recordOutput("Spindexer/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-
+    Logger.recordOutput("Spindexer/VelocityRPS", velocityRPS);
+    Logger.recordOutput("Spindexer/VelocityRPM", velocityRPS * 60.0);
+    Logger.recordOutput("Spindexer/SupplyCurrent", supplyCurrent);
+    Logger.recordOutput("Spindexer/StatorCurrent", statorCurrent);
     Logger.recordOutput("Spindexer/CommandedPercent", commandedPercent);
-
     Logger.recordOutput("Spindexer/Running", running);
+    Logger.recordOutput("Spindexer/HardwareEnabled", hardwareEnabled);
   }
 }

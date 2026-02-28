@@ -12,8 +12,10 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Turret extends SubsystemBase {
 
-  private final TalonFX motor = new TalonFX(Constants.Turret.Motor);
-  private final CANcoder encoder = new CANcoder(Constants.Turret.Encoder);
+  private final boolean hardwareEnabled = Constants.Turret.HardwareEnabled;
+
+  private TalonFX motor;
+  private CANcoder encoder;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0);
 
@@ -22,9 +24,11 @@ public class Turret extends SubsystemBase {
   private final LoggedNetworkNumber targetAngleDeg =
       new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
 
-  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.02);
+  private final LoggedNetworkNumber kP =
+      new LoggedNetworkNumber("Turret/kP", 0.02);
 
-  private final LoggedNetworkNumber maxOutput = new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
+  private final LoggedNetworkNumber maxOutput =
+      new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
 
   private final LoggedNetworkNumber toleranceDeg =
       new LoggedNetworkNumber("Turret/ToleranceDeg", 2.0);
@@ -34,13 +38,20 @@ public class Turret extends SubsystemBase {
   private boolean closedLoop = false;
 
   public Turret() {
-    configureMotor();
-    configureEncoder();
+
+    if (hardwareEnabled) {
+      motor = new TalonFX(Constants.Turret.Motor);
+      encoder = new CANcoder(Constants.Turret.Encoder);
+
+      configureMotor();
+      configureEncoder();
+    }
   }
 
   private void configureMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = com.ctre.phoenix6.signals.NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode =
+        com.ctre.phoenix6.signals.NeutralModeValue.Coast;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 25;
@@ -50,13 +61,11 @@ public class Turret extends SubsystemBase {
 
   private void configureEncoder() {
     CANcoderConfiguration config = new CANcoderConfiguration();
-    config.MagnetSensor.MagnetOffset = Constants.Turret.EncoderOffset;
+    config.MagnetSensor.MagnetOffset =
+        Constants.Turret.EncoderOffset;
     encoder.getConfigurator().apply(config);
   }
 
-  public boolean isAtSetpoint() {
-    
-  }
   /* ===================== Public Control ===================== */
 
   public void enableClosedLoop() {
@@ -65,12 +74,26 @@ public class Turret extends SubsystemBase {
 
   public void disable() {
     closedLoop = false;
-    setPercentOutput(0);
+
+    if (hardwareEnabled) {
+      setPercentOutput(0);
+    }
   }
 
   public void setManualPercent(double percent) {
     closedLoop = false;
-    setPercentOutput(percent);
+
+    if (hardwareEnabled) {
+      setPercentOutput(percent);
+    }
+  }
+
+  public boolean isAtSetpoint() {
+    if (!hardwareEnabled) return false;
+
+    double current = getTurretAngleDegrees();
+    double target = targetAngleDeg.get();
+    return Math.abs(current - target) < toleranceDeg.get();
   }
 
   /* ===================== Core Logic ===================== */
@@ -78,32 +101,37 @@ public class Turret extends SubsystemBase {
   @Override
   public void periodic() {
 
-    double current = getTurretAngleDegrees();
-    double target = targetAngleDeg.get();
+    double current = hardwareEnabled
+        ? getTurretAngleDegrees()
+        : 0.0;
 
+    double target = targetAngleDeg.get();
     double delta = computeSafeDelta(current, target);
 
     Logger.recordOutput("Turret/CurrentDeg", current);
     Logger.recordOutput("Turret/TargetDeg", target);
     Logger.recordOutput("Turret/DeltaDeg", delta);
+    Logger.recordOutput("Turret/ClosedLoop", closedLoop);
+    Logger.recordOutput("Turret/HardwareEnabled", hardwareEnabled);
 
-    if (!closedLoop) {
-      return;
-    }
+    if (!closedLoop) return;
 
     if (Math.abs(delta) < toleranceDeg.get()) {
-      setPercentOutput(0);
+      if (hardwareEnabled) {
+        setPercentOutput(0);
+      }
       Logger.recordOutput("Turret/Output", 0.0);
       return;
     }
 
     double output = delta * kP.get();
 
-    // Clamp output
     double max = maxOutput.get();
     output = Math.max(-max, Math.min(max, output));
 
-    setPercentOutput(output);
+    if (hardwareEnabled) {
+      setPercentOutput(output);
+    }
 
     Logger.recordOutput("Turret/Output", output);
   }
@@ -113,9 +141,20 @@ public class Turret extends SubsystemBase {
     motor.setControl(voltageOut);
   }
 
+  /* ===================== Jog Helpers ===================== */
+
+  public void jogLeft() {
+    targetAngleDeg.set(targetAngleDeg.get() - 0.1);
+  }
+
+  public void jogRight() {
+    targetAngleDeg.set(targetAngleDeg.get() + 0.1);
+  }
+
   /* ===================== Encoder ===================== */
 
   public double getTurretAngleDegrees() {
+    if (!hardwareEnabled) return 0.0;
     return encoder.getAbsolutePosition().getValueAsDouble() * 360.0;
   }
 
@@ -135,11 +174,9 @@ public class Turret extends SubsystemBase {
 
     double delta = target - current;
 
-    // Wrap shortest path
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    // Clamp away from forbidden region
     double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
     if (Math.abs(target) > maxAllowed) {
       target = Math.signum(target) * maxAllowed;
