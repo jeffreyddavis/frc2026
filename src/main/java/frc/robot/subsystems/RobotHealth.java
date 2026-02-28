@@ -82,7 +82,6 @@ public class RobotHealth extends SubsystemBase {
 
   public void updateZones() {
 
-    double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
     Pose2d pose = m_Drivetrain.getPose();
     double poseX = FlipUtil.applyX(pose.getX());
 
@@ -197,7 +196,7 @@ public class RobotHealth extends SubsystemBase {
   }
 
   private boolean poseTimeout() {
-    return !m_Drivetrain.gyro.isConnected()
+    return !m_Drivetrain.gyroConnected
         && !m_QuestNav.questNav.isConnected()
         && !m_QuestNav.questNav.isTracking();
   }
