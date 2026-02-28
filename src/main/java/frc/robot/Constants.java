@@ -56,6 +56,7 @@ public final class Constants {
 
   public static final class Hood {
     public static final boolean HardwareEnabled = false;
+    public static final double distanceToleranceMM = 1;
   }
 
   public static final class Spindexer {

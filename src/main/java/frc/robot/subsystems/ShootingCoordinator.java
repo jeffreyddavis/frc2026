@@ -17,6 +17,16 @@ public class ShootingCoordinator extends SubsystemBase {
     BLOCKED
   }
 
+  public static boolean trenchOverrideEnabled = false;
+
+  /* ===================== Tunable Targets ===================== */
+
+  // You can move these to Constants later if desired
+  private static final double SHOOT_HOOD_MM = 45.0;
+  private static final double PASS_HOOD_MM  = 20.0;
+
+  /* ===================== Subsystems ===================== */
+
   private final Shooter shooter;
   private final Turret turret;
   private final Loader loader;
@@ -24,10 +34,15 @@ public class ShootingCoordinator extends SubsystemBase {
   private final Hood hood;
   private final RobotHealth robotHealth;
 
+  /* ===================== State ===================== */
+
   private ShootingMode currentMode = ShootingMode.MANUAL;
   private boolean requestShot = false;
-
   private ShotType currentShotType = ShotType.NONE;
+
+  private double shotRequestStartTime = 0;
+  private boolean timingShot = false;
+  private static final double SHOOT_FALLBACK_TIME = 0.6; // seconds
 
   public ShootingCoordinator(
       Shooter shooter,
@@ -61,14 +76,80 @@ public class ShootingCoordinator extends SubsystemBase {
 
     currentShotType = determineShotType();
 
-    boolean readyToFire =
-        shooterAtSpeed() && turretAtSetpoint() && hoodAtSetpoint() && robotHealth.fieldReady;
+    // ----------------------------
+    // HARD trench protection
+    // ----------------------------
+    boolean trenchBlocked =
+        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench)
+        && !trenchOverrideEnabled;
 
+    if (trenchBlocked) {
+        hood.setPositionMm(0);
+        loader.stop();
+        spindexer.stop();
+        logState(false, false);
+        return;
+    }
+
+    // ----------------------------
+    // Hood Targeting (AUTO_AIM only)
+    // ----------------------------
+    if (currentMode == ShootingMode.AUTO_AIM) {
+
+      switch (currentShotType) {
+
+        case SHOOT:
+          hood.setPositionMm(SHOOT_HOOD_MM);
+          break;
+
+        case PASS:
+          hood.setPositionMm(PASS_HOOD_MM);
+          break;
+
+        case NONE:
+        case BLOCKED:
+        default:
+          // Do nothing special
+          break;
+      }
+    }
+
+    double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+
+    if (requestShot && !timingShot) {
+        shotRequestStartTime = now;
+        timingShot = true;
+    }
+
+    if (!requestShot) {
+        timingShot = false;
+    }
+
+    boolean shooterReady = shooter.isAtSetpoint();
+
+
+    boolean timeoutReady =
+        timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
+
+    boolean speedGate = shooterReady || timeoutReady;
+
+    // ----------------------------
+    // Readiness Check
+    // ----------------------------
+    boolean readyToFire =
+        speedGate
+            && turret.isAtSetpoint()
+            && hood.isAtSetpoint()
+            && robotHealth.fieldReady;
+
+    // ----------------------------
+    // Feed Gate
+    // ----------------------------
     boolean allowFeed =
         requestShot
             && readyToFire
-            && currentShotType != ShotType.NONE
-            && currentShotType != ShotType.BLOCKED;
+            && (currentShotType == ShotType.SHOOT
+                || currentShotType == ShotType.PASS);
 
     if (allowFeed) {
       spindexer.feed();
@@ -85,8 +166,7 @@ public class ShootingCoordinator extends SubsystemBase {
 
   private ShotType determineShotType() {
 
-    // Hard block in trench
-    if (robotHealth.inTrenchZones) {
+    if (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) {
       return ShotType.BLOCKED;
     }
 
@@ -94,31 +174,15 @@ public class ShootingCoordinator extends SubsystemBase {
       return ShotType.NONE;
     }
 
-    // Alliance zone → full shoot
     if (robotHealth.inAllianceZone) {
       return ShotType.SHOOT;
     }
 
-    // Neutral or opponent zone → pass
     if (robotHealth.inNeutralZone || robotHealth.inOpponentZone) {
       return ShotType.PASS;
     }
 
     return ShotType.NONE;
-  }
-
-  /* ===================== State Helpers ===================== */
-
-  private boolean shooterAtSpeed() {
-    return shooter.isAtSetpoint();
-  }
-
-  private boolean turretAtSetpoint() {
-    return turret.isAtSetpoint();
-  }
-
-  private boolean hoodAtSetpoint() {
-    return hood.isAtSetpoint();
   }
 
   /* ===================== Logging ===================== */

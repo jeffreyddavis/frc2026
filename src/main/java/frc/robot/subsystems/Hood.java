@@ -53,6 +53,7 @@ public class Hood extends SubsystemBase {
 
     // Estimate time to move
     double distance = Math.abs(positionMm - lastCommandedMm);
+    if (distance <= Constants.Hood.distanceToleranceMM) return; // don't command the servo repeatedly
     double travelTime = distance / MM_PER_SECOND;
 
     lastCommandedMm = positionMm;
