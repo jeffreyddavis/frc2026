@@ -38,9 +38,45 @@ public final class Constants {
     REPLAY
   }
 
+  // ===============================
+  // CANivore Bus (Drivetrain Only)
+  // ===============================
+  public static final class Drivetrain {
+    // Front Left Module
+    public static final int FL_Drive = 1;
+    public static final int FL_Steer = 2;
+    public static final int FL_Encoder = 3;
+
+    // Front Right Module
+    public static final int FR_Drive = 4;
+    public static final int FR_Steer = 5;
+    public static final int FR_Encoder = 6;
+
+    // Back Left Module
+    public static final int BL_Drive = 7;
+    public static final int BL_Steer = 8;
+    public static final int BL_Encoder = 9;
+
+    // Back Right Module
+    public static final int BR_Drive = 10;
+    public static final int BR_Steer = 11;
+    public static final int BR_Encoder = 12;
+
+    // Gyro
+    public static final int Pigeon = 13;
+
+    // Canivore
+    public static final int Canivore = 14; // Also 0 sometimes. 
+  }
+
+  public static final class SystemDevices {
+    public static final int PDH = 20;
+    public static final int RoboRIO = 21; // Documentation reference only
+  }
+
   public static final class Turret {
-    public static final int Motor = 20;
-    public static final int Encoder = 21;
+    public static final int Motor = 30;
+    public static final int Encoder = 31;
     public static final double TestSpeed = .1;
     public static final double EncoderOffset = 0;
     public static final double FORBIDDEN_LIMIT_DEG = 180.0;
@@ -50,7 +86,7 @@ public final class Constants {
   }
 
   public static final class Loader {
-    public static final int Motor = 30;
+    public static final int Motor = 40;
     public static final boolean HardwareEnabled = false;
   }
 
@@ -60,22 +96,22 @@ public final class Constants {
   }
 
   public static final class Spindexer {
-    public static final int Motor = 40;
+    public static final int Motor = 50;
     public static final boolean HardwareEnabled = false;
   }
 
   public static final class Intake {
-    public static final int ArmLeader = 50;
-    public static final int ArmFollower = 51;
-    public static final int RollerLeft = 52;
-    public static final int RollerRight = 53;
+    public static final int ArmLeader = 60;
+    public static final int ArmFollower = 61;
+    public static final int RollerLeft = 63;
+    public static final int RollerRight = 64;
     public static final boolean HardwareEnabled = false;
   }
 
   public static final class Shooter {
-    public static final int LeftMotor = 60;
+    public static final int LeftMotor = 70;
+    public static final int RightMotor = 71;
     public static final double PassRPM = 3000.0;
-    public static final int RightMotor = 61;
     public static final double RPSTolerance = 5.0;
     public static final boolean HardwareEnabled = false;
   }

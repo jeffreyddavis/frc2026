@@ -30,6 +30,8 @@ public class Turret extends SubsystemBase {
   private final LoggedNetworkNumber kP =
       new LoggedNetworkNumber("Turret/kP", 0.02);
 
+  private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
+
   private final LoggedNetworkNumber maxOutput =
       new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
 
@@ -68,6 +70,15 @@ public class Turret extends SubsystemBase {
         Constants.Turret.EncoderOffset;
     encoder.getConfigurator().apply(config);
   }
+
+
+  /* ===================== Zeroing ===================== */
+
+  public void zeroTurret() {
+    if (!hardwareEnabled) return;
+    encoder.setPosition(0.0); // rotations = 0 at boot
+  }
+
 
   /* ===================== Public Control ===================== */
 
@@ -130,7 +141,7 @@ public class Turret extends SubsystemBase {
     double output = delta * kP.get();
 
     double max = maxOutput.get();
-    output = Math.max(-max, Math.min(max, output));
+    output = MathUtil.clamp(output, -max, max);
 
     if (hardwareEnabled) {
       setPercentOutput(output);
@@ -140,7 +151,8 @@ public class Turret extends SubsystemBase {
   }
 
   private void setPercentOutput(double percent) {
-    voltageOut.Output = percent * 12.0;
+    double desiredOut = percent * 12.0;
+    if (Math.abs(desiredOut) > 0) voltageOut.Output = desiredOut + (Math.signum(percent) * kSVolts.get());
     motor.setControl(voltageOut);
   }
 
@@ -174,7 +186,7 @@ public class Turret extends SubsystemBase {
 
   public double getTurretAngleDegrees() {
     if (!hardwareEnabled) return 0.0;
-    return encoder.getAbsolutePosition().getValueAsDouble() * 360.0;
+    return encoder.getPosition().getValueAsDouble() * 360.0;
   }
 
   /* ===================== Safety & Math ===================== */
