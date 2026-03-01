@@ -74,6 +74,7 @@ public final class Constants {
 
   public static final class Shooter {
     public static final int LeftMotor = 60;
+    public static final double PassRPM = 3000.0;
     public static final int RightMotor = 61;
     public static final double RPSTolerance = 5.0;
     public static final boolean HardwareEnabled = false;

@@ -1,6 +1,16 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FieldConstants;
+import frc.robot.FlipUtil;
+import frc.robot.shot.ShotController;
+import frc.robot.shot.ShotSolution;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.Constants;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ShootingCoordinator extends SubsystemBase {
@@ -33,6 +43,8 @@ public class ShootingCoordinator extends SubsystemBase {
   private final Spindexer spindexer;
   private final Hood hood;
   private final RobotHealth robotHealth;
+  private final ShotController shotController;
+  private final Drive drive;
 
   /* ===================== State ===================== */
 
@@ -50,13 +62,17 @@ public class ShootingCoordinator extends SubsystemBase {
       Hood hood,
       Loader loader,
       Spindexer spindexer,
-      RobotHealth robotHealth) {
+      RobotHealth robotHealth,
+      ShotController shotController,
+      Drive drive) {
     this.shooter = shooter;
     this.turret = turret;
     this.hood = hood;
     this.loader = loader;
     this.spindexer = spindexer;
     this.robotHealth = robotHealth;
+    this.shotController = shotController;
+    this.drive = drive;
   }
 
   /* ===================== DRIVER INTERFACE ===================== */
@@ -70,6 +86,31 @@ public class ShootingCoordinator extends SubsystemBase {
   }
 
   /* ===================== CORE LOGIC ===================== */
+
+  private Translation2d getPassTarget() {
+
+      // Define in BLUE coordinate space
+      Translation2d bottomCorner =
+          new Translation2d(1.0, 2.0);
+
+      Translation2d topCorner =
+          new Translation2d(
+              1.0,
+              FieldConstants.fieldWidth - 2.0
+          );
+
+      // Decide which corner is closer to robot
+      double robotY = drive.getPose().getY();
+
+      Translation2d chosen =
+          Math.abs(robotY - bottomCorner.getY())
+          < Math.abs(robotY - topCorner.getY())
+          ? bottomCorner
+          : topCorner;
+
+      // Flip automatically for red alliance
+      return FlipUtil.apply(chosen);
+  }
 
   @Override
   public void periodic() {
@@ -99,11 +140,29 @@ public class ShootingCoordinator extends SubsystemBase {
       switch (currentShotType) {
 
         case SHOOT:
-          hood.setPositionMm(SHOOT_HOOD_MM);
+        ShotSolution solution =
+            shotController.calculate(
+                drive.getPose().getTranslation(),
+                drive.getFieldRelativeVelocity(),
+                FieldConstants.Hub.innerCenterPoint.toTranslation2d()
+            );
+
+          turret.setFieldTargetAngle(solution.turretDegrees(), drive.getRotation());
+          hood.setPositionAngle(solution.hoodDegrees());
+          shooter.setTargetRPM(solution.shooterRPM());
           break;
 
         case PASS:
-          hood.setPositionMm(PASS_HOOD_MM);
+            ShotSolution passSolution =
+                shotController.calculate(
+                    drive.getPose().getTranslation(),
+                    drive.getFieldRelativeVelocity(),
+                    getPassTarget()
+                );
+
+            turret.setFieldTargetAngle(passSolution.turretDegrees(), drive.getRotation());
+            hood.setPositionAngle(passSolution.hoodDegrees());
+            shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
         case NONE:
@@ -166,20 +225,24 @@ public class ShootingCoordinator extends SubsystemBase {
 
   private ShotType determineShotType() {
 
-    if (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) {
-      return ShotType.BLOCKED;
+    boolean trenchBlocked =
+        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench)
+        && !trenchOverrideEnabled;
+
+    if (trenchBlocked) {
+        return ShotType.BLOCKED;
     }
 
     if (!robotHealth.fieldReady) {
-      return ShotType.NONE;
+        return ShotType.NONE;
     }
 
     if (robotHealth.inAllianceZone) {
-      return ShotType.SHOOT;
+        return ShotType.SHOOT;
     }
 
     if (robotHealth.inNeutralZone || robotHealth.inOpponentZone) {
-      return ShotType.PASS;
+        return ShotType.PASS;
     }
 
     return ShotType.NONE;

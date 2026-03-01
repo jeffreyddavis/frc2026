@@ -132,7 +132,6 @@ public class Shooter extends SubsystemBase {
     }
 
     Logger.recordOutput("Shooter/VelocityRPM", velocityRPM);
-    Logger.recordOutput("Shooter/TargetRPM", lastTargetRPS * 60.0);
     Logger.recordOutput("Shooter/StatorCurrent", statorCurrent);
     Logger.recordOutput("Shooter/SupplyCurrent", supplyCurrent);
     Logger.recordOutput("Shooter/AppliedVolts", appliedVolts);
@@ -172,6 +171,17 @@ public class Shooter extends SubsystemBase {
       leader.setControl(voltageOut.withOutput(0.0));
     }
   }
+
+  public void setTargetRPM(double rpm) {
+
+    // Update NT target so it shows in AdvantageScope
+    targetRPM.set(rpm);
+
+    closedLoop = true;
+
+    // Update cached target immediately for logging and tolerance checks
+    lastTargetRPS = rpm / 60.0;
+}
 
   public double getVelocityRPM() {
     if (!hardwareEnabled) return 0.0;

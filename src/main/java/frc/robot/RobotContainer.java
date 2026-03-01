@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.shot.ShotController;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.drive.*;
@@ -41,6 +42,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
+  private final ShotController shotController;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(1);
@@ -156,10 +158,12 @@ public class RobotContainer {
     intake = new Intake();
     loader = new Loader();
     spindexer = new Spindexer();
+    shotController = new ShotController();
+    shotController.forceDisableTuning();
 
     RobotHealth robotHealth = new RobotHealth(drive, m_QuestNav, vision);
 
-    coordinator = new ShootingCoordinator(shooter, turret, hood, loader, spindexer, robotHealth);
+    coordinator = new ShootingCoordinator(shooter, turret, hood, loader, spindexer, robotHealth, shotController, drive);
 
     // Configure the button bindings
     configureButtonBindings();

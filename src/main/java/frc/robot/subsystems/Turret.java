@@ -5,6 +5,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -141,6 +144,22 @@ public class Turret extends SubsystemBase {
     motor.setControl(voltageOut);
   }
 
+  public void setFieldTargetAngle(double fieldTargetDeg, Rotation2d robotHeading) {
+
+    // Convert robot heading to degrees
+    double robotDeg = robotHeading.getDegrees();
+
+    // Turret target relative to robot frame
+    double turretRelativeTarget = fieldTargetDeg - robotDeg;
+
+    // Normalize to signed range
+    turretRelativeTarget = normalizeToSigned(turretRelativeTarget);
+
+    targetAngleDeg.set(turretRelativeTarget);
+
+    closedLoop = true;
+}
+
   /* ===================== Jog Helpers ===================== */
 
   public void jogLeft() {
@@ -167,21 +186,19 @@ public class Turret extends SubsystemBase {
     return angle;
   }
 
-  private double computeSafeDelta(double currentDeg, double targetDeg) {
+private double computeSafeDelta(double currentDeg, double targetDeg) {
 
     double current = normalizeToSigned(currentDeg);
     double target = normalizeToSigned(targetDeg);
+
+    double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
+    target = MathUtil.clamp(target, -maxAllowed, maxAllowed);
 
     double delta = target - current;
 
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
-    if (Math.abs(target) > maxAllowed) {
-      target = Math.signum(target) * maxAllowed;
-    }
-
     return delta;
-  }
+}
 }
