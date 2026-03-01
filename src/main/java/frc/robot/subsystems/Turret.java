@@ -50,6 +50,7 @@ public class Turret extends SubsystemBase {
 
       configureMotor();
       configureEncoder();
+      zeroTurret(); // Use boot position as zero
     }
   }
 
