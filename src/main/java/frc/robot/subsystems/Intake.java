@@ -59,11 +59,9 @@ public class Intake extends SubsystemBase {
       armLeader = new TalonFX(Constants.Intake.ArmLeader);
       armFollower = new TalonFX(Constants.Intake.ArmFollower);
 
-      rollerLeft =
-          new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
+      rollerLeft = new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
 
-      rollerRight =
-          new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
+      rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
 
       configureArmMotors();
       configureRollers();
@@ -84,8 +82,7 @@ public class Intake extends SubsystemBase {
 
     applyArmCurrentLimit(armCurrentLimit.get());
 
-    armFollower.setControl(
-        new Follower(armLeader.getDeviceID(), MotorAlignmentValue.Opposed));
+    armFollower.setControl(new Follower(armLeader.getDeviceID(), MotorAlignmentValue.Opposed));
 
     armLeader.getSupplyCurrent().setUpdateFrequency(100);
     armLeader.optimizeBusUtilization();
@@ -116,9 +113,7 @@ public class Intake extends SubsystemBase {
   private void applyArmCurrentLimit(double limit) {
 
     CurrentLimitsConfigs limits =
-        new CurrentLimitsConfigs()
-            .withSupplyCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(limit);
+        new CurrentLimitsConfigs().withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(limit);
 
     armLeader.getConfigurator().apply(limits);
     armFollower.getConfigurator().apply(limits);
@@ -186,8 +181,7 @@ public class Intake extends SubsystemBase {
     double rollerRightCurrent = 0.0;
 
     if (hardwareEnabled) {
-      armSupplyCurrent =
-          armLeader.getSupplyCurrent().getValueAsDouble();
+      armSupplyCurrent = armLeader.getSupplyCurrent().getValueAsDouble();
       rollerLeftCurrent = rollerLeft.getOutputCurrent();
       rollerRightCurrent = rollerRight.getOutputCurrent();
     }

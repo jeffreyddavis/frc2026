@@ -7,8 +7,8 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -23,7 +23,7 @@ public final class Constants {
 
   public static final double YawWarningTolerance = 2;
   public static final double TrenchDangerDistance = 2;
-  public static final double ZONE_HYSTERESIS = 0.15;  // meters (~6 in)
+  public static final double ZONE_HYSTERESIS = 0.15; // meters (~6 in)
 
   public static final double MAX_SPEED = Units.feetToMeters(14.5);
 
@@ -66,7 +66,7 @@ public final class Constants {
     public static final int Pigeon = 13;
 
     // Canivore
-    public static final int Canivore = 14; // Also 0 sometimes. 
+    public static final int Canivore = 14; // Also 0 sometimes.
   }
 
   public static final class SystemDevices {

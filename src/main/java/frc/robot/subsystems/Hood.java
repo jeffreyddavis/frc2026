@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.addons.LinearServo;
-
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -53,7 +52,8 @@ public class Hood extends SubsystemBase {
 
     // Estimate time to move
     double distance = Math.abs(positionMm - lastCommandedMm);
-    if (distance <= Constants.Hood.distanceToleranceMM) return; // don't command the servo repeatedly
+    if (distance <= Constants.Hood.distanceToleranceMM)
+      return; // don't command the servo repeatedly
     double travelTime = distance / MM_PER_SECOND;
 
     lastCommandedMm = positionMm;
@@ -99,10 +99,7 @@ public class Hood extends SubsystemBase {
 
   private double angleToMm(double degrees) {
 
-    degrees = MathUtil.clamp(
-        degrees,
-        ANGLE_TO_MM.firstKey(),
-        ANGLE_TO_MM.lastKey());
+    degrees = MathUtil.clamp(degrees, ANGLE_TO_MM.firstKey(), ANGLE_TO_MM.lastKey());
 
     var lower = ANGLE_TO_MM.floorEntry(degrees);
     var upper = ANGLE_TO_MM.ceilingEntry(degrees);
@@ -113,13 +110,8 @@ public class Hood extends SubsystemBase {
       return lower.getValue();
     }
 
-    double t =
-        (degrees - lower.getKey()) /
-        (upper.getKey() - lower.getKey());
+    double t = (degrees - lower.getKey()) / (upper.getKey() - lower.getKey());
 
-    return MathUtil.interpolate(
-        lower.getValue(),
-        upper.getValue(),
-        t);
+    return MathUtil.interpolate(lower.getValue(), upper.getValue(), t);
   }
 }

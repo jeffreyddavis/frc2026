@@ -303,15 +303,9 @@ public class Drive extends SubsystemBase {
 
     // Convert to field-relative speeds using current robot rotation
     ChassisSpeeds fieldRelative =
-        ChassisSpeeds.fromRobotRelativeSpeeds(
-            robotRelative,
-            getRotation()
-        );
+        ChassisSpeeds.fromRobotRelativeSpeeds(robotRelative, getRotation());
 
-    return new Translation2d(
-        fieldRelative.vxMetersPerSecond,
-        fieldRelative.vyMetersPerSecond
-    );
+    return new Translation2d(fieldRelative.vxMetersPerSecond, fieldRelative.vyMetersPerSecond);
   }
 
   /** Returns the position of each module in radians. */

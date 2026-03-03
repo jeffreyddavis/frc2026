@@ -64,8 +64,7 @@ public class Spindexer extends SubsystemBase {
 
     // Live-update current limit if changed
     double newLimit = supplyCurrentLimit.get();
-    if (hardwareEnabled &&
-        Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
+    if (hardwareEnabled && Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
 
       applyCurrentLimit(newLimit);
       lastAppliedCurrentLimit = newLimit;
@@ -115,9 +114,7 @@ public class Spindexer extends SubsystemBase {
 
   private void applyCurrentLimit(double limit) {
     CurrentLimitsConfigs limits =
-        new CurrentLimitsConfigs()
-            .withSupplyCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(limit);
+        new CurrentLimitsConfigs().withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(limit);
 
     motor.getConfigurator().apply(limits);
   }

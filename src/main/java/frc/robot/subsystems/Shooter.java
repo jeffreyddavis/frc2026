@@ -19,15 +19,12 @@ public class Shooter extends SubsystemBase {
 
   // Control requests (reuse objects)
   private final VoltageOut voltageOut = new VoltageOut(0.0);
-  private final VelocityTorqueCurrentFOC velocityFOC =
-      new VelocityTorqueCurrentFOC(0.0);
+  private final VelocityTorqueCurrentFOC velocityFOC = new VelocityTorqueCurrentFOC(0.0);
 
   // AdvantageKit tunables
-  private final LoggedNetworkNumber kP =
-      new LoggedNetworkNumber("Shooter/kP", 0.1);
+  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", 0.1);
 
-  private final LoggedNetworkNumber kD =
-      new LoggedNetworkNumber("Shooter/kD", 0.0);
+  private final LoggedNetworkNumber kD = new LoggedNetworkNumber("Shooter/kD", 0.0);
 
   private final LoggedNetworkNumber targetRPM =
       new LoggedNetworkNumber("Shooter/TargetRPM", 2000.0);
@@ -67,8 +64,7 @@ public class Shooter extends SubsystemBase {
       follower.getConfigurator().apply(config);
 
       // Follower
-      follower.setControl(
-          new Follower(leader.getDeviceID(), MotorAlignmentValue.Opposed));
+      follower.setControl(new Follower(leader.getDeviceID(), MotorAlignmentValue.Opposed));
 
       // Faster status updates
       leader.getVelocity().setUpdateFrequency(100);
@@ -101,8 +97,7 @@ public class Shooter extends SubsystemBase {
     double currentKP = kP.get();
     double currentKD = kD.get();
 
-    if (Math.abs(currentKP - lastKP) > 1e-6 ||
-        Math.abs(currentKD - lastKD) > 1e-6) {
+    if (Math.abs(currentKP - lastKP) > 1e-6 || Math.abs(currentKD - lastKD) > 1e-6) {
 
       if (hardwareEnabled) {
         config.Slot0.kP = currentKP;
@@ -181,7 +176,7 @@ public class Shooter extends SubsystemBase {
 
     // Update cached target immediately for logging and tolerance checks
     lastTargetRPS = rpm / 60.0;
-}
+  }
 
   public double getVelocityRPM() {
     if (!hardwareEnabled) return 0.0;
@@ -192,7 +187,6 @@ public class Shooter extends SubsystemBase {
     if (!hardwareEnabled) return false;
 
     double velocityRPS = leader.getVelocity().getValueAsDouble();
-    return Math.abs(velocityRPS - lastTargetRPS)
-        < Constants.Shooter.RPSTolerance;
+    return Math.abs(velocityRPS - lastTargetRPS) < Constants.Shooter.RPSTolerance;
   }
 }

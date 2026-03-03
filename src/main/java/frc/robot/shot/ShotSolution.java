@@ -1,7 +1,3 @@
 package frc.robot.shot;
 
-public record ShotSolution(
-    double turretDegrees,
-    double hoodDegrees,
-    double shooterRPM
-) {}
+public record ShotSolution(double turretDegrees, double hoodDegrees, double shooterRPM) {}

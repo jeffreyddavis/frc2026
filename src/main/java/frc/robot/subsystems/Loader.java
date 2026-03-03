@@ -64,8 +64,7 @@ public class Loader extends SubsystemBase {
     // Live-update supply current limit
     double newLimit = currentLimit.get();
 
-    if (hardwareEnabled &&
-        Math.abs(newLimit - lastSupplyLimit) > 1e-6) {
+    if (hardwareEnabled && Math.abs(newLimit - lastSupplyLimit) > 1e-6) {
 
       applyCurrentLimit(newLimit);
       lastSupplyLimit = newLimit;

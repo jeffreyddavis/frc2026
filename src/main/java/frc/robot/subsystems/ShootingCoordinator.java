@@ -1,16 +1,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.FieldConstants;
 import frc.robot.FlipUtil;
 import frc.robot.shot.ShotController;
 import frc.robot.shot.ShotSolution;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.Constants;
-
 import org.littletonrobotics.junction.Logger;
 
 public class ShootingCoordinator extends SubsystemBase {
@@ -33,7 +29,7 @@ public class ShootingCoordinator extends SubsystemBase {
 
   // You can move these to Constants later if desired
   private static final double SHOOT_HOOD_MM = 45.0;
-  private static final double PASS_HOOD_MM  = 20.0;
+  private static final double PASS_HOOD_MM = 20.0;
 
   /* ===================== Subsystems ===================== */
 
@@ -89,27 +85,21 @@ public class ShootingCoordinator extends SubsystemBase {
 
   private Translation2d getPassTarget() {
 
-      // Define in BLUE coordinate space
-      Translation2d bottomCorner =
-          new Translation2d(1.0, 2.0);
+    // Define in BLUE coordinate space
+    Translation2d bottomCorner = new Translation2d(1.0, 2.0);
 
-      Translation2d topCorner =
-          new Translation2d(
-              1.0,
-              FieldConstants.fieldWidth - 2.0
-          );
+    Translation2d topCorner = new Translation2d(1.0, FieldConstants.fieldWidth - 2.0);
 
-      // Decide which corner is closer to robot
-      double robotY = drive.getPose().getY();
+    // Decide which corner is closer to robot
+    double robotY = drive.getPose().getY();
 
-      Translation2d chosen =
-          Math.abs(robotY - bottomCorner.getY())
-          < Math.abs(robotY - topCorner.getY())
-          ? bottomCorner
-          : topCorner;
+    Translation2d chosen =
+        Math.abs(robotY - bottomCorner.getY()) < Math.abs(robotY - topCorner.getY())
+            ? bottomCorner
+            : topCorner;
 
-      // Flip automatically for red alliance
-      return FlipUtil.apply(chosen);
+    // Flip automatically for red alliance
+    return FlipUtil.apply(chosen);
   }
 
   @Override
@@ -121,15 +111,14 @@ public class ShootingCoordinator extends SubsystemBase {
     // HARD trench protection
     // ----------------------------
     boolean trenchBlocked =
-        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench)
-        && !trenchOverrideEnabled;
+        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
 
     if (trenchBlocked) {
-        hood.setPositionMm(0);
-        loader.stop();
-        spindexer.stop();
-        logState(false, false);
-        return;
+      hood.setPositionMm(0);
+      loader.stop();
+      spindexer.stop();
+      logState(false, false);
+      return;
     }
 
     // ----------------------------
@@ -138,14 +127,12 @@ public class ShootingCoordinator extends SubsystemBase {
     if (currentMode == ShootingMode.AUTO_AIM) {
 
       switch (currentShotType) {
-
         case SHOOT:
-        ShotSolution solution =
-            shotController.calculate(
-                drive.getPose().getTranslation(),
-                drive.getFieldRelativeVelocity(),
-                FieldConstants.Hub.innerCenterPoint.toTranslation2d()
-            );
+          ShotSolution solution =
+              shotController.calculate(
+                  drive.getPose().getTranslation(),
+                  drive.getFieldRelativeVelocity(),
+                  FieldConstants.Hub.innerCenterPoint.toTranslation2d());
 
           turret.setFieldTargetAngle(solution.turretDegrees(), drive.getRotation());
           hood.setPositionAngle(solution.hoodDegrees());
@@ -153,16 +140,15 @@ public class ShootingCoordinator extends SubsystemBase {
           break;
 
         case PASS:
-            ShotSolution passSolution =
-                shotController.calculate(
-                    drive.getPose().getTranslation(),
-                    drive.getFieldRelativeVelocity(),
-                    getPassTarget()
-                );
+          ShotSolution passSolution =
+              shotController.calculate(
+                  drive.getPose().getTranslation(),
+                  drive.getFieldRelativeVelocity(),
+                  getPassTarget());
 
-            turret.setFieldTargetAngle(passSolution.turretDegrees(), drive.getRotation());
-            hood.setPositionAngle(passSolution.hoodDegrees());
-            shooter.setTargetRPM(passSolution.shooterRPM());
+          turret.setFieldTargetAngle(passSolution.turretDegrees(), drive.getRotation());
+          hood.setPositionAngle(passSolution.hoodDegrees());
+          shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
         case NONE:
@@ -176,19 +162,17 @@ public class ShootingCoordinator extends SubsystemBase {
     double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
 
     if (requestShot && !timingShot) {
-        shotRequestStartTime = now;
-        timingShot = true;
+      shotRequestStartTime = now;
+      timingShot = true;
     }
 
     if (!requestShot) {
-        timingShot = false;
+      timingShot = false;
     }
 
     boolean shooterReady = shooter.isAtSetpoint();
 
-
-    boolean timeoutReady =
-        timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
+    boolean timeoutReady = timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
 
     boolean speedGate = shooterReady || timeoutReady;
 
@@ -196,10 +180,7 @@ public class ShootingCoordinator extends SubsystemBase {
     // Readiness Check
     // ----------------------------
     boolean readyToFire =
-        speedGate
-            && turret.isAtSetpoint()
-            && hood.isAtSetpoint()
-            && robotHealth.fieldReady;
+        speedGate && turret.isAtSetpoint() && hood.isAtSetpoint() && robotHealth.fieldReady;
 
     // ----------------------------
     // Feed Gate
@@ -207,8 +188,7 @@ public class ShootingCoordinator extends SubsystemBase {
     boolean allowFeed =
         requestShot
             && readyToFire
-            && (currentShotType == ShotType.SHOOT
-                || currentShotType == ShotType.PASS);
+            && (currentShotType == ShotType.SHOOT || currentShotType == ShotType.PASS);
 
     if (allowFeed) {
       spindexer.feed();
@@ -226,23 +206,22 @@ public class ShootingCoordinator extends SubsystemBase {
   private ShotType determineShotType() {
 
     boolean trenchBlocked =
-        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench)
-        && !trenchOverrideEnabled;
+        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
 
     if (trenchBlocked) {
-        return ShotType.BLOCKED;
+      return ShotType.BLOCKED;
     }
 
     if (!robotHealth.fieldReady) {
-        return ShotType.NONE;
+      return ShotType.NONE;
     }
 
     if (robotHealth.inAllianceZone) {
-        return ShotType.SHOOT;
+      return ShotType.SHOOT;
     }
 
     if (robotHealth.inNeutralZone || robotHealth.inOpponentZone) {
-        return ShotType.PASS;
+      return ShotType.PASS;
     }
 
     return ShotType.NONE;

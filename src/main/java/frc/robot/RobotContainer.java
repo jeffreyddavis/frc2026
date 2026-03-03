@@ -12,9 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -163,12 +161,13 @@ public class RobotContainer {
 
     RobotHealth robotHealth = new RobotHealth(drive, m_QuestNav, vision);
 
-    coordinator = new ShootingCoordinator(shooter, turret, hood, loader, spindexer, robotHealth, shotController, drive);
+    coordinator =
+        new ShootingCoordinator(
+            shooter, turret, hood, loader, spindexer, robotHealth, shotController, drive);
 
     // Configure the button bindings
     configureButtonBindings();
   }
-
 
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
@@ -179,130 +178,117 @@ public class RobotContainer {
             () -> -stick.getRawAxis(0),
             () -> -stick.getRawAxis(2)));
 
-
     // Switch to X pattern when X button is pressed
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
-    shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable()));
+    shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
 
     // Reset gyro to 0° when B button is pressed
-    resetGyro.onTrue(Commands.runOnce(
-            () ->
-                drive.setPose(
-                    new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-            drive)
-        .ignoringDisable(true));
+    resetGyro.onTrue(
+        Commands.runOnce(
+                () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                drive)
+            .ignoringDisable(true));
 
     /* ================= AUTO AIM MODE ================= */
 
-        toggleAuto.onTrue(
-            new InstantCommand(() ->
-                coordinator.setMode(
-                    ShootingCoordinator.ShootingMode.AUTO_AIM
-                )
-            )
-        );
+    toggleAuto.onTrue(
+        new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM)));
 
-        /* ================= SHOOT REQUEST ================= */
+    /* ================= SHOOT REQUEST ================= */
 
-        trigger.onTrue(
-            new InstantCommand(() ->
-                coordinator.setRequestShot(true)
-            )
-        );
+    trigger.onTrue(new InstantCommand(() -> coordinator.setRequestShot(true)));
 
-        trigger.onFalse(
-            new InstantCommand(() ->
-                coordinator.setRequestShot(false)
-            )
-        );
+    trigger.onFalse(new InstantCommand(() -> coordinator.setRequestShot(false)));
 
-        /* ================= INTAKE ================= */
+    /* ================= INTAKE ================= */
 
-        intakeIn.whileTrue(
-            new RunCommand(() -> {
-                intake.intake();
-                spindexer.feed();
-            })
-        ).onFalse(
-            new InstantCommand(() -> {
-                intake.stopRollers();
-                spindexer.stop();
-            })
-        );
+    intakeIn
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  intake.intake();
+                  spindexer.feed();
+                }))
+        .onFalse(
+            new InstantCommand(
+                () -> {
+                  intake.stopRollers();
+                  spindexer.stop();
+                }));
 
-        intakeReverse.whileTrue(
-            new RunCommand(() -> {
-                intake.outtake();
-                spindexer.reverse();
-            })
-        ).onFalse(
-            new InstantCommand(() -> {
-                intake.stopRollers();
-                spindexer.stop();
-            })
-        );
+    intakeReverse
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  intake.outtake();
+                  spindexer.reverse();
+                }))
+        .onFalse(
+            new InstantCommand(
+                () -> {
+                  intake.stopRollers();
+                  spindexer.stop();
+                }));
 
-        /* ================= ARM ================= */
+    /* ================= ARM ================= */
 
-        deployArm.whileTrue(
-            new RunCommand(() -> intake.deploy())
-        ).onFalse(
-            new InstantCommand(() -> intake.stopArm())
-        );
+    deployArm
+        .whileTrue(new RunCommand(() -> intake.deploy()))
+        .onFalse(new InstantCommand(() -> intake.stopArm()));
 
-        retractArm.whileTrue(
-            new RunCommand(() -> intake.retract())
-        ).onFalse(
-            new InstantCommand(() -> intake.stopArm())
-        );
+    retractArm
+        .whileTrue(new RunCommand(() -> intake.retract()))
+        .onFalse(new InstantCommand(() -> intake.stopArm()));
 
-        /* ================= MANUAL OVERRIDES ================= */
+    /* ================= MANUAL OVERRIDES ================= */
 
-        manualSpindexer.whileTrue(
-            new RunCommand(() -> spindexer.feed())
-        ).onFalse(
-            new InstantCommand(() -> spindexer.stop())
-        );
+    manualSpindexer
+        .whileTrue(new RunCommand(() -> spindexer.feed()))
+        .onFalse(new InstantCommand(() -> spindexer.stop()));
 
-        manualLoader.whileTrue(
-            new RunCommand(() -> loader.feed())
-        ).onFalse(
-            new InstantCommand(() -> loader.stop())
-        );
+    manualLoader
+        .whileTrue(new RunCommand(() -> loader.feed()))
+        .onFalse(new InstantCommand(() -> loader.stop()));
 
-        hoodUp.whileTrue(
-            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);hood.incrementUp();})
-            
-        );
+    hoodUp.whileTrue(
+        new RunCommand(
+            () -> {
+              coordinator.setMode(ShootingMode.MANUAL);
+              hood.incrementUp();
+            }));
 
-        hoodDown.whileTrue(
-            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);hood.incrementDown();})
-        );
+    hoodDown.whileTrue(
+        new RunCommand(
+            () -> {
+              coordinator.setMode(ShootingMode.MANUAL);
+              hood.incrementDown();
+            }));
 
-        turretLeft.whileTrue(
-            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);turret.jogLeft();}, turret)
-        );
+    turretLeft.whileTrue(
+        new RunCommand(
+            () -> {
+              coordinator.setMode(ShootingMode.MANUAL);
+              turret.jogLeft();
+            },
+            turret));
 
-        turretRight.whileTrue(
-            new RunCommand(() -> {coordinator.setMode(ShootingMode.MANUAL);turret.jogRight();}, turret)
-        );
+    turretRight.whileTrue(
+        new RunCommand(
+            () -> {
+              coordinator.setMode(ShootingMode.MANUAL);
+              turret.jogRight();
+            },
+            turret));
 
-        shooterEnable.whileTrue(
-            new RunCommand(() -> shooter.enableClosedLoop())
-        ).onFalse(
-            new InstantCommand(() -> shooter.disable())
-        );
+    shooterEnable
+        .whileTrue(new RunCommand(() -> shooter.enableClosedLoop()))
+        .onFalse(new InstantCommand(() -> shooter.disable()));
 
-        passMode.onTrue(
-            new InstantCommand(() ->
-                coordinator.setMode(
-                    ShootingCoordinator.ShootingMode.AUTO_AIM
-                )
-            )
-        );
+    passMode.onTrue(
+        new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM)));
   }
 
   /**

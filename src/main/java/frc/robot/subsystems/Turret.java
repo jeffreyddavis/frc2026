@@ -5,7 +5,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,13 +26,11 @@ public class Turret extends SubsystemBase {
   private final LoggedNetworkNumber targetAngleDeg =
       new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
 
-  private final LoggedNetworkNumber kP =
-      new LoggedNetworkNumber("Turret/kP", 0.02);
+  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.02);
 
   private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
 
-  private final LoggedNetworkNumber maxOutput =
-      new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
+  private final LoggedNetworkNumber maxOutput = new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
 
   private final LoggedNetworkNumber toleranceDeg =
       new LoggedNetworkNumber("Turret/ToleranceDeg", 2.0);
@@ -56,8 +53,7 @@ public class Turret extends SubsystemBase {
 
   private void configureMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode =
-        com.ctre.phoenix6.signals.NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = com.ctre.phoenix6.signals.NeutralModeValue.Coast;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 25;
@@ -67,11 +63,9 @@ public class Turret extends SubsystemBase {
 
   private void configureEncoder() {
     CANcoderConfiguration config = new CANcoderConfiguration();
-    config.MagnetSensor.MagnetOffset =
-        Constants.Turret.EncoderOffset;
+    config.MagnetSensor.MagnetOffset = Constants.Turret.EncoderOffset;
     encoder.getConfigurator().apply(config);
   }
-
 
   /* ===================== Zeroing ===================== */
 
@@ -79,7 +73,6 @@ public class Turret extends SubsystemBase {
     if (!hardwareEnabled) return;
     encoder.setPosition(0.0); // rotations = 0 at boot
   }
-
 
   /* ===================== Public Control ===================== */
 
@@ -116,9 +109,7 @@ public class Turret extends SubsystemBase {
   @Override
   public void periodic() {
 
-    double current = hardwareEnabled
-        ? getTurretAngleDegrees()
-        : 0.0;
+    double current = hardwareEnabled ? getTurretAngleDegrees() : 0.0;
 
     double target = targetAngleDeg.get();
     double delta = computeSafeDelta(current, target);
@@ -153,7 +144,8 @@ public class Turret extends SubsystemBase {
 
   private void setPercentOutput(double percent) {
     double desiredOut = percent * 12.0;
-    if (Math.abs(desiredOut) > 0) voltageOut.Output = desiredOut + (Math.signum(percent) * kSVolts.get());
+    if (Math.abs(desiredOut) > 0)
+      voltageOut.Output = desiredOut + (Math.signum(percent) * kSVolts.get());
     motor.setControl(voltageOut);
   }
 
@@ -171,7 +163,7 @@ public class Turret extends SubsystemBase {
     targetAngleDeg.set(turretRelativeTarget);
 
     closedLoop = true;
-}
+  }
 
   /* ===================== Jog Helpers ===================== */
 
@@ -199,7 +191,7 @@ public class Turret extends SubsystemBase {
     return angle;
   }
 
-private double computeSafeDelta(double currentDeg, double targetDeg) {
+  private double computeSafeDelta(double currentDeg, double targetDeg) {
 
     double current = normalizeToSigned(currentDeg);
     double target = normalizeToSigned(targetDeg);
@@ -213,5 +205,5 @@ private double computeSafeDelta(double currentDeg, double targetDeg) {
     if (delta < -180) delta += 360;
 
     return delta;
-}
+  }
 }
