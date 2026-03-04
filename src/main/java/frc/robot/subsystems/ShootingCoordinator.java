@@ -8,6 +8,7 @@ import frc.robot.shot.ShotController;
 import frc.robot.shot.ShotSolution;
 import frc.robot.subsystems.drive.Drive;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class ShootingCoordinator extends SubsystemBase {
 
@@ -51,6 +52,8 @@ public class ShootingCoordinator extends SubsystemBase {
   private double shotRequestStartTime = 0;
   private boolean timingShot = false;
   private static final double SHOOT_FALLBACK_TIME = 0.6; // seconds
+
+  private final LoggedNetworkNumber rpmTrimPercent = new LoggedNetworkNumber("Shooting/rpmTrimPercent", 0.0);
 
   public ShootingCoordinator(
       Shooter shooter,
@@ -136,7 +139,8 @@ public class ShootingCoordinator extends SubsystemBase {
 
           turret.setFieldTargetAngle(solution.turretDegrees(), drive.getRotation());
           hood.setPositionAngle(solution.hoodDegrees());
-          shooter.setTargetRPM(solution.shooterRPM());
+          double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
+          shooter.setTargetRPM(solution.shooterRPM() + ((trim/100) * solution.shooterRPM()));
           break;
 
         case PASS:
@@ -225,6 +229,10 @@ public class ShootingCoordinator extends SubsystemBase {
     }
 
     return ShotType.NONE;
+  }
+
+  public void resetTrim() {
+    rpmTrimPercent.set(0.0);
   }
 
   /* ===================== Logging ===================== */
