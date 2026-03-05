@@ -83,6 +83,16 @@ public class Hood extends SubsystemBase {
     m_rightHood.retract();
   }
 
+  public void retract() {
+    m_leftHood.retract();
+    m_rightHood.retract();
+  }
+
+  public void extendFully() {
+    m_leftHood.extend();
+    m_rightHood.extend();
+  }
+
   public void incrementUp() {
     setPositionMm(lastCommandedMm + 1);
   }

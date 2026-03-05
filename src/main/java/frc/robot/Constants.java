@@ -112,6 +112,7 @@ public final class Constants {
     public static final int LeftMotor = 70;
     public static final int RightMotor = 71;
     public static final double PassRPM = 3000.0;
+    public static final double AutoRPM = 3500.0;
     public static final double RPSTolerance = 5.0;
     public static final boolean HardwareEnabled = false;
   }

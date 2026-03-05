@@ -10,6 +10,8 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
@@ -21,7 +23,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutoAimOn;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeIn;
+import frc.robot.commands.IntakeOut;
+import frc.robot.commands.Shoot;
+import frc.robot.commands.StartShooter;
+import frc.robot.commands.StopShoot;
+import frc.robot.commands.WaitForShooterReady;
 import frc.robot.generated.TunerConstants;
 import frc.robot.shot.ShotController;
 import frc.robot.subsystems.*;
@@ -167,6 +176,45 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
+    addNamedCommands();
+  }
+
+  
+  private void addNamedCommands() {
+    NamedCommands.registerCommand(
+        "StartShooter",
+        new StartShooter(shooter)
+    );
+
+    NamedCommands.registerCommand(
+        "Shoot",
+        new Shoot(loader, spindexer)
+    );
+
+    NamedCommands.registerCommand(
+        "StopShoot",
+        new StopShoot(loader, spindexer)
+    );
+
+    NamedCommands.registerCommand(
+        "IntakeOut",
+        new IntakeOut(intake)
+    );
+
+    NamedCommands.registerCommand(
+        "IntakeIn",
+        new IntakeIn(intake)
+    );
+
+    NamedCommands.registerCommand(
+        "AutoAimOn",
+        new AutoAimOn(coordinator)
+    );
+
+    NamedCommands.registerCommand(
+        "WaitForShooterReady",
+        new WaitForShooterReady(shooter, .5)
+    );
   }
 
   private void configureButtonBindings() {

@@ -37,6 +37,11 @@ public class Shooter extends SubsystemBase {
   private boolean closedLoop = false;
   private double lastTargetRPS = 0.0;
 
+  private double timeWithinTolerance = 0.0;
+  private double lastTimestamp = 0.0;
+
+  private static final double STABLE_TIME = 0.10; // seconds
+
   // Config reused
   private final TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -87,7 +92,25 @@ public class Shooter extends SubsystemBase {
       double rpm = targetRPM.get();
       double rps = rpm / 60.0;
       lastTargetRPS = rps;
+      
       leader.setControl(velocityFOC.withVelocity(rps));
+      double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+      double dt = now - lastTimestamp;
+      lastTimestamp = now;
+
+      double velocityRPS = hardwareEnabled
+          ? leader.getVelocity().getValueAsDouble()
+          : 0.0;
+
+      double error = Math.abs(velocityRPS - lastTargetRPS);
+
+      if (error < Constants.Shooter.RPSTolerance) {
+        timeWithinTolerance += dt;
+      } else {
+        timeWithinTolerance = 0.0;
+      }
+
+
     }
 
     logTelemetry();
@@ -132,6 +155,13 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/AppliedVolts", appliedVolts);
     Logger.recordOutput("Shooter/ClosedLoop", closedLoop);
     Logger.recordOutput("Shooter/HardwareEnabled", hardwareEnabled);
+    Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
+    Logger.recordOutput(
+      "Shooter/RPMError",
+      (leader.getVelocity().getValueAsDouble() - lastTargetRPS) * 60.0
+    );
+    Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
+
   }
 
   // =====================
@@ -176,6 +206,7 @@ public class Shooter extends SubsystemBase {
 
     // Update cached target immediately for logging and tolerance checks
     lastTargetRPS = rpm / 60.0;
+    timeWithinTolerance = 0.0; // reset stability
   }
 
   public double getVelocityRPM() {
@@ -185,8 +216,6 @@ public class Shooter extends SubsystemBase {
 
   public boolean isAtSetpoint() {
     if (!hardwareEnabled) return false;
-
-    double velocityRPS = leader.getVelocity().getValueAsDouble();
-    return Math.abs(velocityRPS - lastTargetRPS) < Constants.Shooter.RPSTolerance;
+    return timeWithinTolerance > STABLE_TIME;
   }
 }
