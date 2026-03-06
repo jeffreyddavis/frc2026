@@ -6,9 +6,11 @@ import frc.robot.subsystems.Intake;
 public class IntakeOut extends InstantCommand {
 
   public IntakeOut(Intake intake) {
-    super(() -> {
-      intake.deploy();
-      intake.intake();
-    }, intake);
+    super(
+        () -> {
+          intake.deploy();
+          intake.intake();
+        },
+        intake);
   }
 }

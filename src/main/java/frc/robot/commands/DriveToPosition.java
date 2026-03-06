@@ -4,7 +4,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-
 import frc.robot.subsystems.drive.Drive;
 
 public class DriveToPosition extends Command {
@@ -37,27 +36,15 @@ public class DriveToPosition extends Command {
 
     Pose2d pose = drive.getPose();
 
-    double vx =
-        xController.calculate(
-            pose.getX(),
-            target.getX());
+    double vx = xController.calculate(pose.getX(), target.getX());
 
-    double vy =
-        yController.calculate(
-            pose.getY(),
-            target.getY());
+    double vy = yController.calculate(pose.getY(), target.getY());
 
     double omega =
         thetaController.calculate(
-            pose.getRotation().getRadians(),
-            target.getRotation().getRadians());
+            pose.getRotation().getRadians(), target.getRotation().getRadians());
 
-    drive.runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            vx,
-            vy,
-            omega,
-            pose.getRotation()));
+    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, pose.getRotation()));
   }
 
   @Override
@@ -67,11 +54,7 @@ public class DriveToPosition extends Command {
 
     double dx = Math.abs(pose.getX() - target.getX());
     double dy = Math.abs(pose.getY() - target.getY());
-    double dtheta =
-        Math.abs(
-            pose.getRotation()
-                .minus(target.getRotation())
-                .getRadians());
+    double dtheta = Math.abs(pose.getRotation().minus(target.getRotation()).getRadians());
 
     return dx < 0.1 && dy < 0.1 && dtheta < Math.toRadians(5);
   }

@@ -14,16 +14,10 @@ public class TunableAutoPose {
 
     x = new LoggedNetworkNumber(name + "/x", defaultPose.getX());
     y = new LoggedNetworkNumber(name + "/y", defaultPose.getY());
-    theta =
-        new LoggedNetworkNumber(
-            name + "/theta",
-            defaultPose.getRotation().getDegrees());
+    theta = new LoggedNetworkNumber(name + "/theta", defaultPose.getRotation().getDegrees());
   }
 
   public Pose2d get() {
-    return new Pose2d(
-        x.get(),
-        y.get(),
-        Rotation2d.fromDegrees(theta.get()));
+    return new Pose2d(x.get(), y.get(), Rotation2d.fromDegrees(theta.get()));
   }
 }

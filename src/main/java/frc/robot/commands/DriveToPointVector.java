@@ -21,12 +21,12 @@ public class DriveToPointVector extends Command {
   private static final double POSITION_TOLERANCE = 0.10; // meters
   private static final double ANGLE_TOLERANCE = Math.toRadians(5);
 
-
-  private static final double MIN_SPEED = 0.25;    // m/s
-  private static final double SLOW_RADIUS = 1.0;   // meters
+  private static final double MIN_SPEED = 0.25; // m/s
+  private static final double SLOW_RADIUS = 1.0; // meters
   private static final double STOP_RADIUS = 0.12; // meters
 
-  public DriveToPointVector(Drive drive, Pose2d target, double max_speed) { // 3 m/s is a good starting point
+  public DriveToPointVector(
+      Drive drive, Pose2d target, double max_speed) { // 3 m/s is a good starting point
     this.drive = drive;
     this.target = target;
     this.MAX_SPEED = max_speed;
@@ -49,35 +49,22 @@ public class DriveToPointVector extends Command {
     Translation2d current = pose.getTranslation();
     Translation2d goal = target.getTranslation();
 
-
-    
     Translation2d errorVector = goal.minus(current);
 
     double distance = errorVector.getNorm();
 
-    
-
     Logger.recordOutput("DriveToPoint/TargetPose", target);
     Logger.recordOutput("DriveToPoint/DistanceError", distance);
 
+    Translation2d direction = distance > 0 ? errorVector.div(distance) : new Translation2d();
 
-    Translation2d direction =
-        distance > 0
-            ? errorVector.div(distance)
-            : new Translation2d();
+    double angleError = Math.abs(pose.getRotation().minus(target.getRotation()).getRadians());
 
-
-    double angleError =
-        Math.abs(
-            pose.getRotation()
-                .minus(target.getRotation())
-                .getRadians());
-
-    if ( distance < POSITION_TOLERANCE
-        && angleError < ANGLE_TOLERANCE ) { // don't start moving if we're already there. 
-            drive.stop();
-            return;
-        }
+    if (distance < POSITION_TOLERANCE
+        && angleError < ANGLE_TOLERANCE) { // don't start moving if we're already there.
+      drive.stop();
+      return;
+    }
 
     double speed = kP_distance * distance;
 
@@ -86,7 +73,7 @@ public class DriveToPointVector extends Command {
 
     // slow down smoothly near the target
     if (distance < SLOW_RADIUS) {
-    speed *= distance / SLOW_RADIUS;
+      speed *= distance / SLOW_RADIUS;
     }
 
     // ensure we don't stall when far away
@@ -96,32 +83,20 @@ public class DriveToPointVector extends Command {
 
     double omega =
         thetaController.calculate(
-            pose.getRotation().getRadians(),
-            target.getRotation().getRadians());
+            pose.getRotation().getRadians(), target.getRotation().getRadians());
 
-    double headingError =
-        Math.abs(
-            pose.getRotation()
-                .minus(target.getRotation())
-                .getRadians());
+    double headingError = Math.abs(pose.getRotation().minus(target.getRotation()).getRadians());
 
-    double headingScale =
-        Math.max(0.2, 1.0 - (headingError / Math.PI));
+    double headingScale = Math.max(0.2, 1.0 - (headingError / Math.PI));
 
     speed *= headingScale;
 
-    Logger.recordOutput(
-        "DriveToPoint/TargetHeading",
-        target.getRotation().getDegrees()
-    );
+    Logger.recordOutput("DriveToPoint/TargetHeading", target.getRotation().getDegrees());
     Logger.recordOutput("DriveToPoint/DriveCommandSpeed", speed);
 
     drive.runVelocity(
         ChassisSpeeds.fromFieldRelativeSpeeds(
-            velocity.getX(),
-            velocity.getY(),
-            omega,
-            pose.getRotation()));
+            velocity.getX(), velocity.getY(), omega, pose.getRotation()));
   }
 
   @Override
@@ -129,18 +104,11 @@ public class DriveToPointVector extends Command {
 
     Pose2d pose = drive.getPose();
 
-    double distance =
-        pose.getTranslation()
-            .getDistance(target.getTranslation());
+    double distance = pose.getTranslation().getDistance(target.getTranslation());
 
-    double angleError =
-        Math.abs(
-            pose.getRotation()
-                .minus(target.getRotation())
-                .getRadians());
+    double angleError = Math.abs(pose.getRotation().minus(target.getRotation()).getRadians());
 
-    return distance < POSITION_TOLERANCE
-        && angleError < ANGLE_TOLERANCE;
+    return distance < POSITION_TOLERANCE && angleError < ANGLE_TOLERANCE;
   }
 
   @Override

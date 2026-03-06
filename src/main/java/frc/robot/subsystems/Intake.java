@@ -30,19 +30,19 @@ public class Intake extends SubsystemBase {
   /* ===================== Tunables ===================== */
 
   private final LoggedNetworkNumber deployPercent =
-      new LoggedNetworkNumber("Intake/ArmDeployPercent", 0.5);
+      new LoggedNetworkNumber("Intake/ArmDeployPercent", 0.0);
 
   private final LoggedNetworkNumber retractPercent =
-      new LoggedNetworkNumber("Intake/ArmRetractPercent", -0.5);
+      new LoggedNetworkNumber("Intake/ArmRetractPercent", -0.0);
 
   private final LoggedNetworkNumber armCurrentLimit =
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
 
   private final LoggedNetworkNumber intakePercent =
-      new LoggedNetworkNumber("Intake/RollerIntakePercent", 0.7);
+      new LoggedNetworkNumber("Intake/RollerIntakePercent", 0.0);
 
   private final LoggedNetworkNumber outtakePercent =
-      new LoggedNetworkNumber("Intake/RollerOuttakePercent", -0.6);
+      new LoggedNetworkNumber("Intake/RollerOuttakePercent", -0.1);
 
   private final LoggedNetworkNumber holdPercent =
       new LoggedNetworkNumber("Intake/RollerHoldPercent", 0.1);
@@ -169,7 +169,7 @@ public class Intake extends SubsystemBase {
     if (!hardwareEnabled) return;
 
     rollerLeft.set(percent);
-    rollerRight.set(percent);
+    rollerRight.set(-percent);
   }
 
   /* ===================== Logging ===================== */

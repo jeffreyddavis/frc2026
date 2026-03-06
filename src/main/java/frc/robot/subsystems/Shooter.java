@@ -92,15 +92,13 @@ public class Shooter extends SubsystemBase {
       double rpm = targetRPM.get();
       double rps = rpm / 60.0;
       lastTargetRPS = rps;
-      
+
       leader.setControl(velocityFOC.withVelocity(rps));
       double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
       double dt = now - lastTimestamp;
       lastTimestamp = now;
 
-      double velocityRPS = hardwareEnabled
-          ? leader.getVelocity().getValueAsDouble()
-          : 0.0;
+      double velocityRPS = hardwareEnabled ? leader.getVelocity().getValueAsDouble() : 0.0;
 
       double error = Math.abs(velocityRPS - lastTargetRPS);
 
@@ -109,8 +107,6 @@ public class Shooter extends SubsystemBase {
       } else {
         timeWithinTolerance = 0.0;
       }
-
-
     }
 
     logTelemetry();
@@ -147,6 +143,8 @@ public class Shooter extends SubsystemBase {
       statorCurrent = leader.getStatorCurrent().getValueAsDouble();
       supplyCurrent = leader.getSupplyCurrent().getValueAsDouble();
       appliedVolts = leader.getMotorVoltage().getValueAsDouble();
+      Logger.recordOutput(
+          "Shooter/RPMError", (leader.getVelocity().getValueAsDouble() - lastTargetRPS) * 60.0);
     }
 
     Logger.recordOutput("Shooter/VelocityRPM", velocityRPM);
@@ -156,12 +154,8 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/ClosedLoop", closedLoop);
     Logger.recordOutput("Shooter/HardwareEnabled", hardwareEnabled);
     Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
-    Logger.recordOutput(
-      "Shooter/RPMError",
-      (leader.getVelocity().getValueAsDouble() - lastTargetRPS) * 60.0
-    );
-    Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
 
+    Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
   }
 
   // =====================

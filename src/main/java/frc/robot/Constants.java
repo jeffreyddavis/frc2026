@@ -97,15 +97,15 @@ public final class Constants {
 
   public static final class Spindexer {
     public static final int Motor = 50;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 
   public static final class Intake {
     public static final int ArmLeader = 60;
     public static final int ArmFollower = 61;
-    public static final int RollerLeft = 63;
-    public static final int RollerRight = 64;
-    public static final boolean HardwareEnabled = false;
+    public static final int RollerLeft = 53;
+    public static final int RollerRight = 54;
+    public static final boolean HardwareEnabled = true;
   }
 
   public static final class Shooter {

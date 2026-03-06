@@ -7,9 +7,12 @@ import frc.robot.subsystems.Spindexer;
 public class Shoot extends InstantCommand {
 
   public Shoot(Loader loader, Spindexer spindexer) {
-    super(() -> {
-      loader.feed();
-      spindexer.feed();
-    }, loader, spindexer);
+    super(
+        () -> {
+          loader.feed();
+          spindexer.feed();
+        },
+        loader,
+        spindexer);
   }
 }

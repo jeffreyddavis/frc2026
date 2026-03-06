@@ -7,9 +7,12 @@ import frc.robot.subsystems.Spindexer;
 public class StopShoot extends InstantCommand {
 
   public StopShoot(Loader loader, Spindexer spindexer) {
-    super(() -> {
-      loader.stop();
-      spindexer.stop();
-    }, loader, spindexer);
+    super(
+        () -> {
+          loader.stop();
+          spindexer.stop();
+        },
+        loader,
+        spindexer);
   }
 }

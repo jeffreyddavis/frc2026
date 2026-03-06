@@ -20,7 +20,7 @@ public class Spindexer extends SubsystemBase {
   /* ===================== Tunables ===================== */
 
   private final LoggedNetworkNumber feedPercent =
-      new LoggedNetworkNumber("Spindexer/FeedPercent", 0.5);
+      new LoggedNetworkNumber("Spindexer/FeedPercent", 0.0);
 
   private final LoggedNetworkNumber reversePercent =
       new LoggedNetworkNumber("Spindexer/ReversePercent", -0.4);
@@ -48,7 +48,7 @@ public class Spindexer extends SubsystemBase {
 
   private void configureMotor() {
     TalonFXConfiguration baseConfig = new TalonFXConfiguration();
-    baseConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    baseConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     motor.getConfigurator().apply(baseConfig);
 
     applyCurrentLimit(supplyCurrentLimit.get());

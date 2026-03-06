@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4540097402597407,
-        "y": 5.6840909090909095
+        "x": 8.108035714285714,
+        "y": 2.5331493506493508
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.049099025974027,
-        "y": 5.603108766233767
+        "x": 7.342386363636364,
+        "y": 1.3846753246753247
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.4795178571428568,
-        "y": 5.16875
+        "x": 4.662613636363636,
+        "y": 0.39816558441558414
       },
       "prevControl": {
-        "x": 1.7752321428571425,
-        "y": 5.525071428571429
+        "x": 5.587957695981465,
+        "y": 0.22382539927019618
+      },
+      "nextControl": {
+        "x": 3.646655844155844,
+        "y": 0.5895779220779219
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.409837662337663,
+        "y": 2.5331493506493508
+      },
+      "prevControl": {
+        "x": 2.4540097402597407,
+        "y": 1.2668831168831172
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,20 +49,20 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "shoot_preload",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "reload",
+      "name": "Shoot",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
       "name": "shoot_again",
-      "waypointRelativePos": 1.0,
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "reload_field",
+      "waypointRelativePos": 0.1,
       "endWaypointRelativePos": null,
       "command": null
     }

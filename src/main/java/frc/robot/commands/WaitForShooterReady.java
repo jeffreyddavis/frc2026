@@ -6,23 +6,22 @@ import frc.robot.subsystems.Shooter;
 
 public class WaitForShooterReady extends Command {
 
-    private final Shooter shooter;
-    private final double timeout;
-    private double startTime;
+  private final Shooter shooter;
+  private final double timeout;
+  private double startTime;
 
-    public WaitForShooterReady(Shooter shooter, double timeoutSeconds) {
-        this.shooter = shooter;
-        this.timeout = timeoutSeconds;
-    }
+  public WaitForShooterReady(Shooter shooter, double timeoutSeconds) {
+    this.shooter = shooter;
+    this.timeout = timeoutSeconds;
+  }
 
-    @Override
-    public void initialize() {
-        startTime = Timer.getFPGATimestamp();
-    }
+  @Override
+  public void initialize() {
+    startTime = Timer.getFPGATimestamp();
+  }
 
-    @Override
-    public boolean isFinished() {
-        return shooter.isAtSetpoint()
-            || (Timer.getFPGATimestamp() - startTime) > timeout;
-    }
+  @Override
+  public boolean isFinished() {
+    return shooter.isAtSetpoint() || (Timer.getFPGATimestamp() - startTime) > timeout;
+  }
 }

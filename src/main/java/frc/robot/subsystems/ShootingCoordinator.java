@@ -53,7 +53,8 @@ public class ShootingCoordinator extends SubsystemBase {
   private boolean timingShot = false;
   private static final double SHOOT_FALLBACK_TIME = 0.6; // seconds
 
-  private final LoggedNetworkNumber rpmTrimPercent = new LoggedNetworkNumber("Shooting/rpmTrimPercent", 0.0);
+  private final LoggedNetworkNumber rpmTrimPercent =
+      new LoggedNetworkNumber("Shooting/rpmTrimPercent", 0.0);
 
   public ShootingCoordinator(
       Shooter shooter,
@@ -140,7 +141,7 @@ public class ShootingCoordinator extends SubsystemBase {
           turret.setFieldTargetAngle(solution.turretDegrees(), drive.getRotation());
           hood.setPositionAngle(solution.hoodDegrees());
           double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
-          shooter.setTargetRPM(solution.shooterRPM() + ((trim/100) * solution.shooterRPM()));
+          shooter.setTargetRPM(solution.shooterRPM() + ((trim / 100) * solution.shooterRPM()));
           break;
 
         case PASS:

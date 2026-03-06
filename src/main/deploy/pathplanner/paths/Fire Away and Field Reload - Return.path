@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4540097402597407,
-        "y": 5.6840909090909095
+        "x": 7.978,
+        "y": 5.719
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.049099025974027,
-        "y": 5.603108766233767
+        "x": 7.168642857142856,
+        "y": 6.642625000000001
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.4795178571428568,
-        "y": 5.16875
+        "x": 4.6419999999999995,
+        "y": 7.3876607142857145
       },
       "prevControl": {
-        "x": 1.7752321428571425,
-        "y": 5.525071428571429
+        "x": 5.946306754651929,
+        "y": 7.638488936334163
+      },
+      "nextControl": {
+        "x": 3.3786785714285705,
+        "y": 7.144714285714286
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.277,
+        "y": 5.509
+      },
+      "prevControl": {
+        "x": 3.119535714285714,
+        "y": 6.901767857142858
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,26 +47,7 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "shoot_preload",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "reload",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "shoot_again",
-      "waypointRelativePos": 1.0,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
