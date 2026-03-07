@@ -26,18 +26,18 @@ public class Turret extends SubsystemBase {
   private final LoggedNetworkNumber targetAngleDeg =
       new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
 
-  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.02);
+  //private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.00002);
 
-  private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
+  //private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
 
-  private final LoggedNetworkNumber maxOutput = new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
+  //private final LoggedNetworkNumber maxOutput = new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
 
-  private final LoggedNetworkNumber toleranceDeg =
-      new LoggedNetworkNumber("Turret/ToleranceDeg", 2.0);
+  //private final LoggedNetworkNumber toleranceDeg =
+   //   new LoggedNetworkNumber("Turret/ToleranceDeg", 2.0);
 
   /* ===================== State ===================== */
 
-  private boolean closedLoop = false;
+  private boolean closedLoop = true;
 
   public Turret() {
 
@@ -53,7 +53,7 @@ public class Turret extends SubsystemBase {
 
   private void configureMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = com.ctre.phoenix6.signals.NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = com.ctre.phoenix6.signals.NeutralModeValue.Brake;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 25;
@@ -101,7 +101,7 @@ public class Turret extends SubsystemBase {
 
     double current = getTurretAngleDegrees();
     double target = targetAngleDeg.get();
-    return Math.abs(current - target) < toleranceDeg.get();
+    return Math.abs(current - target) < Constants.Turret.toleranceDeg; //toleranceDeg.get();
   }
 
   /* ===================== Core Logic ===================== */
@@ -122,7 +122,7 @@ public class Turret extends SubsystemBase {
 
     if (!closedLoop) return;
 
-    if (Math.abs(delta) < toleranceDeg.get()) {
+    if (Math.abs(delta) < Constants.Turret.toleranceDeg /*toleranceDeg.get()*/) {
       if (hardwareEnabled) {
         setPercentOutput(0);
       }
@@ -130,22 +130,27 @@ public class Turret extends SubsystemBase {
       return;
     }
 
-    double output = delta * kP.get();
+    double output = delta * Constants.Turret.kP; // kP.get();
 
-    double max = maxOutput.get();
+    double max = Constants.Turret.maxOutput; //maxOutput.get();
     output = MathUtil.clamp(output, -max, max);
 
     if (hardwareEnabled) {
-      setPercentOutput(output);
+      setPercentOutput(-output); // direction is inverted
     }
 
     Logger.recordOutput("Turret/Output", output);
   }
 
   private void setPercentOutput(double percent) {
+
     double desiredOut = percent * 12.0;
-    if (Math.abs(desiredOut) > 0)
-      voltageOut.Output = desiredOut + (Math.signum(percent) * kSVolts.get());
+
+    if (Math.abs(percent) > 1e-4) {
+      desiredOut += Math.signum(percent) * Constants.Turret.kS; //kSVolts.get();
+    }
+
+    voltageOut.Output = desiredOut;
     motor.setControl(voltageOut);
   }
 
@@ -168,18 +173,25 @@ public class Turret extends SubsystemBase {
   /* ===================== Jog Helpers ===================== */
 
   public void jogLeft() {
+    // setPercentOutput(.1);
     targetAngleDeg.set(targetAngleDeg.get() - 0.1);
   }
 
   public void jogRight() {
+    // setPercentOutput(-.1);
     targetAngleDeg.set(targetAngleDeg.get() + 0.1);
+  }
+
+  public void stop() {
+    setPercentOutput(0);
   }
 
   /* ===================== Encoder ===================== */
 
   public double getTurretAngleDegrees() {
     if (!hardwareEnabled) return 0.0;
-    return encoder.getPosition().getValueAsDouble() * 360.0;
+    return normalizeToSigned(
+        encoder.getPosition().getValueAsDouble() * (360.0 / Constants.Turret.GEAR_RATIO));
   }
 
   /* ===================== Safety & Math ===================== */

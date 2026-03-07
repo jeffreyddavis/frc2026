@@ -209,7 +209,10 @@ public class RobotContainer {
     shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
 
-    intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
+    // intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
+
+    // loader.setDefaultCommand(Commands.runOnce(() -> loader.feed(), loader));
+    // turret.setDefaultCommand(Commands.runOnce(() -> turret.stop(), turret));
 
     // Reset gyro to 0° when B button is pressed
     resetGyro.onTrue(
@@ -271,44 +274,44 @@ public class RobotContainer {
 
     /* ================= MANUAL OVERRIDES ================= */
     /*
-          manualSpindexer
-              .whileTrue(new RunCommand(() -> spindexer.feed()))
-              .onFalse(new InstantCommand(() -> spindexer.stop()));
+              manualSpindexer
+                  .whileTrue(new RunCommand(() -> spindexer.feed()))
+                  .onFalse(new InstantCommand(() -> spindexer.stop()));
 
-          manualLoader
-              .whileTrue(new RunCommand(() -> loader.feed()))
-              .onFalse(new InstantCommand(() -> loader.stop()));
+              manualLoader
+                  .whileTrue(new RunCommand(() -> loader.feed()))
+                  .onFalse(new InstantCommand(() -> loader.stop()));
 
-       hoodUp.whileTrue(
-           new RunCommand(
-               () -> {
-                 coordinator.setMode(ShootingMode.MANUAL);
-                 hood.incrementUp();
-               }));
+           hoodUp.whileTrue(
+               new RunCommand(
+                   () -> {
+                     coordinator.setMode(ShootingMode.MANUAL);
+                     hood.incrementUp();
+                   }));
 
-       hoodDown.whileTrue(
-           new RunCommand(
-               () -> {
-                 coordinator.setMode(ShootingMode.MANUAL);
-                 hood.incrementDown();
-               }));
-
-       turretLeft.whileTrue(
-           new RunCommand(
-               () -> {
-                 coordinator.setMode(ShootingMode.MANUAL);
-                 turret.jogLeft();
-               },
-               turret));
-
-       turretRight.whileTrue(
-           new RunCommand(
-               () -> {
-                 coordinator.setMode(ShootingMode.MANUAL);
-                 turret.jogRight();
-               },
-               turret));
+           hoodDown.whileTrue(
+               new RunCommand(
+                   () -> {
+                     coordinator.setMode(ShootingMode.MANUAL);
+                     hood.incrementDown();
+                   }));
     */
+    turretLeft.onTrue(
+        new InstantCommand(
+            () -> {
+              // coordinator.setMode(ShootingMode.MANUAL);
+              turret.jogLeft();
+            },
+            turret));
+
+    turretRight.whileTrue(
+        new RunCommand(
+            () -> {
+              // coordinator.setMode(ShootingMode.MANUAL);
+              turret.jogRight();
+            },
+            turret));
+
     shooterEnable
         .whileTrue(new RunCommand(() -> shooter.enableClosedLoop()))
         .onFalse(new InstantCommand(() -> shooter.disable()));

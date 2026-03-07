@@ -1,10 +1,6 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.spark.SparkFlex;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -14,61 +10,31 @@ public class Loader extends SubsystemBase {
 
   private final boolean hardwareEnabled = Constants.Loader.HardwareEnabled;
 
-  private TalonFX motor;
-
-  private final VoltageOut voltageOut = new VoltageOut(0.0);
+  private SparkFlex motor;
 
   /* ===================== Tunables ===================== */
 
-  private final LoggedNetworkNumber feedPercent =
-      new LoggedNetworkNumber("Loader/FeedPercent", 0.5);
+  private final LoggedNetworkNumber feedPercent = new LoggedNetworkNumber("Loader/FeedPercent", .5);
 
   private final LoggedNetworkNumber reversePercent =
-      new LoggedNetworkNumber("Loader/ReversePercent", -0.3);
-
-  private final LoggedNetworkNumber currentLimit =
-      new LoggedNetworkNumber("Loader/SupplyCurrentLimit", 40.0);
+      new LoggedNetworkNumber("Loader/ReversePercent", -0.5);
 
   /* ===================== State ===================== */
 
   private boolean running = false;
   private double commandedPercent = 0.0;
-  private double lastSupplyLimit = currentLimit.get();
 
   public Loader() {
 
     if (hardwareEnabled) {
-      motor = new TalonFX(Constants.Loader.Motor);
-      configureMotor();
-      lastSupplyLimit = currentLimit.get();
+      motor =
+          new SparkFlex(
+              Constants.Loader.Motor, com.revrobotics.spark.SparkLowLevel.MotorType.kBrushless);
     }
-  }
-
-  private void configureMotor() {
-
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motor.getConfigurator().apply(config);
-
-    applyCurrentLimit(currentLimit.get());
-
-    motor.getVelocity().setUpdateFrequency(100);
-    motor.getSupplyCurrent().setUpdateFrequency(100);
-    motor.getStatorCurrent().setUpdateFrequency(100);
-    motor.optimizeBusUtilization();
   }
 
   @Override
   public void periodic() {
-
-    // Live-update supply current limit
-    double newLimit = currentLimit.get();
-
-    if (hardwareEnabled && Math.abs(newLimit - lastSupplyLimit) > 1e-6) {
-
-      applyCurrentLimit(newLimit);
-      lastSupplyLimit = newLimit;
-    }
 
     logTelemetry();
   }
@@ -102,39 +68,25 @@ public class Loader extends SubsystemBase {
   private void setPercentOutput(double percent) {
     if (!hardwareEnabled) return;
 
-    voltageOut.Output = percent * 12.0;
-    motor.setControl(voltageOut);
-  }
-
-  private void applyCurrentLimit(double limit) {
-    CurrentLimitsConfigs limits =
-        new CurrentLimitsConfigs()
-            .withSupplyCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(limit)
-            .withStatorCurrentLimitEnable(true)
-            .withStatorCurrentLimit(100.0);
-
-    motor.getConfigurator().apply(limits);
+    motor.set(percent);
   }
 
   /* ===================== Logging ===================== */
 
   private void logTelemetry() {
 
-    double velocityRPS = 0.0;
-    double supplyCurrent = 0.0;
-    double statorCurrent = 0.0;
+    double velocityRPM = 0.0;
+    double current = 0.0;
 
     if (hardwareEnabled) {
-      velocityRPS = motor.getVelocity().getValueAsDouble();
-      supplyCurrent = motor.getSupplyCurrent().getValueAsDouble();
-      statorCurrent = motor.getStatorCurrent().getValueAsDouble();
+
+      velocityRPM = motor.getEncoder().getVelocity();
+      current = motor.getOutputCurrent();
     }
 
-    Logger.recordOutput("Loader/VelocityRPS", velocityRPS);
-    Logger.recordOutput("Loader/VelocityRPM", velocityRPS * 60.0);
-    Logger.recordOutput("Loader/SupplyCurrent", supplyCurrent);
-    Logger.recordOutput("Loader/StatorCurrent", statorCurrent);
+    Logger.recordOutput("Loader/VelocityRPM", velocityRPM);
+    Logger.recordOutput("Loader/VelocityRPS", velocityRPM / 60.0);
+    Logger.recordOutput("Loader/Current", current);
     Logger.recordOutput("Loader/CommandedPercent", commandedPercent);
     Logger.recordOutput("Loader/Running", running);
     Logger.recordOutput("Loader/HardwareEnabled", hardwareEnabled);
