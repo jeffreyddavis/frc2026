@@ -103,6 +103,7 @@ public final class Constants {
   public static final class Intake {
     public static final int ArmLeader = 60;
     public static final int ArmFollower = 61;
+    public static final int ArmEncoder = 55;
     public static final int RollerLeft = 53;
     public static final int RollerRight = 54;
     public static final boolean HardwareEnabled = true;

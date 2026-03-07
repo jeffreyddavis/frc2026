@@ -207,9 +207,9 @@ public class RobotContainer {
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
     shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
-    //spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
+    // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
 
-    //intake.setDefaultCommand(Commands.run(() -> intake.retract(), intake));
+    intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
 
     // Reset gyro to 0° when B button is pressed
     resetGyro.onTrue(
