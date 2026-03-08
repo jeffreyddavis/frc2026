@@ -209,10 +209,18 @@ public class RobotContainer {
     shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
 
-    // intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
+    intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
 
     // loader.setDefaultCommand(Commands.runOnce(() -> loader.feed(), loader));
-    // turret.setDefaultCommand(Commands.runOnce(() -> turret.stop(), turret));
+    /*
+    turret.setDefaultCommand(
+        Commands.runOnce(
+            () ->
+                turret.setFieldTargetAngle(
+                    0,
+                    drive.getRotation(),
+                    Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond)),
+            turret)); */
 
     // Reset gyro to 0° when B button is pressed
     resetGyro.onTrue(
@@ -296,8 +304,8 @@ public class RobotContainer {
                      hood.incrementDown();
                    }));
     */
-    turretLeft.onTrue(
-        new InstantCommand(
+    turretLeft.whileTrue(
+        new RunCommand(
             () -> {
               // coordinator.setMode(ShootingMode.MANUAL);
               turret.jogLeft();

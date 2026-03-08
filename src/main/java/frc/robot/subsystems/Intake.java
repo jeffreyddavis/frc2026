@@ -36,7 +36,7 @@ public class Intake extends SubsystemBase {
   private final MotionMagicVoltage armMotion = new MotionMagicVoltage(0);
 
   private static final double ARM_MIN = 2.0;
-  private static final double ARM_MAX = 88.0;
+  private static final double ARM_MAX = 78.0;
 
   private SparkFlex rollerLeft;
   private SparkFlex rollerRight;

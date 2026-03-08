@@ -88,6 +88,7 @@ public final class Constants {
     public static final double kS = .2;
     public static final double maxOutput = .95;
     public static final double toleranceDeg = .1;
+    public static final double kFF = 0.0016;
   }
 
   public static final class Loader {

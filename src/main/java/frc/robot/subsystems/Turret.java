@@ -26,14 +26,16 @@ public class Turret extends SubsystemBase {
   private final LoggedNetworkNumber targetAngleDeg =
       new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
 
-  //private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.00002);
+  // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.00002);
 
-  //private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
+  // private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
 
-  //private final LoggedNetworkNumber maxOutput = new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
+  // private final LoggedNetworkNumber maxOutput = new LoggedNetworkNumber("Turret/MaxOutput", 0.4);
 
-  //private final LoggedNetworkNumber toleranceDeg =
-   //   new LoggedNetworkNumber("Turret/ToleranceDeg", 2.0);
+  // private final LoggedNetworkNumber toleranceDeg =
+  //   new LoggedNetworkNumber("Turret/ToleranceDeg", 2.0);
+
+  private double robotOmegaDegPerSec = 0;
 
   /* ===================== State ===================== */
 
@@ -101,7 +103,7 @@ public class Turret extends SubsystemBase {
 
     double current = getTurretAngleDegrees();
     double target = targetAngleDeg.get();
-    return Math.abs(current - target) < Constants.Turret.toleranceDeg; //toleranceDeg.get();
+    return Math.abs(current - target) < Constants.Turret.toleranceDeg; // toleranceDeg.get();
   }
 
   /* ===================== Core Logic ===================== */
@@ -119,6 +121,8 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Turret/DeltaDeg", delta);
     Logger.recordOutput("Turret/ClosedLoop", closedLoop);
     Logger.recordOutput("Turret/HardwareEnabled", hardwareEnabled);
+    Logger.recordOutput("Turret/RobotOmegaDegPerSec", robotOmegaDegPerSec);
+    Logger.recordOutput("Turret/FFContribution", robotOmegaDegPerSec * Constants.Turret.kFF);
 
     if (!closedLoop) return;
 
@@ -130,9 +134,11 @@ public class Turret extends SubsystemBase {
       return;
     }
 
-    double output = delta * Constants.Turret.kP; // kP.get();
+    double output = (delta * Constants.Turret.kP) + (robotOmegaDegPerSec * Constants.Turret.kFF);
 
-    double max = Constants.Turret.maxOutput; //maxOutput.get();
+    // kP.get();
+
+    double max = Constants.Turret.maxOutput; // maxOutput.get();
     output = MathUtil.clamp(output, -max, max);
 
     if (hardwareEnabled) {
@@ -147,20 +153,22 @@ public class Turret extends SubsystemBase {
     double desiredOut = percent * 12.0;
 
     if (Math.abs(percent) > 1e-4) {
-      desiredOut += Math.signum(percent) * Constants.Turret.kS; //kSVolts.get();
+      desiredOut += Math.signum(percent) * Constants.Turret.kS; // kSVolts.get();
     }
 
     voltageOut.Output = desiredOut;
     motor.setControl(voltageOut);
   }
 
-  public void setFieldTargetAngle(double fieldTargetDeg, Rotation2d robotHeading) {
+  public void setFieldTargetAngle(
+      double fieldTargetDeg, Rotation2d robotHeading, double robotAngularVelocityDegPerSec) {
 
+    robotOmegaDegPerSec = robotAngularVelocityDegPerSec;
     // Convert robot heading to degrees
     double robotDeg = robotHeading.getDegrees();
 
     // Turret target relative to robot frame
-    double turretRelativeTarget = fieldTargetDeg - robotDeg;
+    double turretRelativeTarget = robotDeg - fieldTargetDeg;
 
     // Normalize to signed range
     turretRelativeTarget = normalizeToSigned(turretRelativeTarget);
@@ -174,12 +182,12 @@ public class Turret extends SubsystemBase {
 
   public void jogLeft() {
     // setPercentOutput(.1);
-    targetAngleDeg.set(targetAngleDeg.get() - 0.1);
+    targetAngleDeg.set(targetAngleDeg.get() - 1);
   }
 
   public void jogRight() {
     // setPercentOutput(-.1);
-    targetAngleDeg.set(targetAngleDeg.get() + 0.1);
+    targetAngleDeg.set(targetAngleDeg.get() + 1);
   }
 
   public void stop() {
@@ -207,14 +215,18 @@ public class Turret extends SubsystemBase {
 
     double current = normalizeToSigned(currentDeg);
     double target = normalizeToSigned(targetDeg);
+    // 176 compared to -176
 
     double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
+    //
     target = MathUtil.clamp(target, -maxAllowed, maxAllowed);
+    // -176
 
     double delta = target - current;
+    // -176 - 176
 
-    if (delta > 180) delta -= 360;
-    if (delta < -180) delta += 360;
+    // if (delta > 180) delta -= 360;
+    // if (delta < -180) delta += 360;
 
     return delta;
   }

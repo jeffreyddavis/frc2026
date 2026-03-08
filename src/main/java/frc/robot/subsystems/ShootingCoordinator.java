@@ -138,7 +138,10 @@ public class ShootingCoordinator extends SubsystemBase {
                   drive.getFieldRelativeVelocity(),
                   FieldConstants.Hub.innerCenterPoint.toTranslation2d());
 
-          turret.setFieldTargetAngle(solution.turretDegrees(), drive.getRotation());
+          turret.setFieldTargetAngle(
+              solution.turretDegrees(),
+              drive.getRotation(),
+              Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           hood.setPositionAngle(solution.hoodDegrees());
           double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
           shooter.setTargetRPM(solution.shooterRPM() + ((trim / 100) * solution.shooterRPM()));
@@ -151,7 +154,10 @@ public class ShootingCoordinator extends SubsystemBase {
                   drive.getFieldRelativeVelocity(),
                   getPassTarget());
 
-          turret.setFieldTargetAngle(passSolution.turretDegrees(), drive.getRotation());
+          turret.setFieldTargetAngle(
+              passSolution.turretDegrees(),
+              drive.getRotation(),
+              Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           hood.setPositionAngle(passSolution.hoodDegrees());
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
