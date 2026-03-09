@@ -13,7 +13,6 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.SparkFlex;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -38,8 +37,8 @@ public class Intake extends SubsystemBase {
   private static final double ARM_MIN = 2.0;
   private static final double ARM_MAX = 78.0;
 
-  private SparkFlex rollerLeft;
-  private SparkFlex rollerRight;
+  // private SparkFlex rollerLeft;
+  // private SparkFlex rollerRight;
 
   /* ===================== Tunables ===================== */
 
@@ -76,9 +75,9 @@ public class Intake extends SubsystemBase {
       armLeader = new TalonFX(Constants.Intake.ArmLeader);
       armFollower = new TalonFX(Constants.Intake.ArmFollower);
 
-      rollerLeft = new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
+      // rollerLeft = new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
 
-      rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
+      // rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
       armEncoder = new CANcoder(Constants.Intake.ArmEncoder);
       configureArmMotors();
       configureRollers();
@@ -140,8 +139,8 @@ public class Intake extends SubsystemBase {
   }
 
   private void configureRollers() {
-    rollerLeft.set(0);
-    rollerRight.set(0);
+    // rollerLeft.set(0);
+    // rollerRight.set(0);
   }
 
   @AutoLogOutput
@@ -266,8 +265,8 @@ public class Intake extends SubsystemBase {
   private void setRollerPercent(double percent) {
     if (!hardwareEnabled) return;
 
-    rollerLeft.set(percent);
-    rollerRight.set(-percent);
+    // rollerLeft.set(percent);
+    // rollerRight.set(-percent);
   }
 
   /* ===================== Logging ===================== */
@@ -282,8 +281,8 @@ public class Intake extends SubsystemBase {
 
     if (hardwareEnabled) {
       armSupplyCurrent = armLeader.getSupplyCurrent().getValueAsDouble();
-      rollerLeftCurrent = rollerLeft.getOutputCurrent();
-      rollerRightCurrent = rollerRight.getOutputCurrent();
+      // rollerLeftCurrent = rollerLeft.getOutputCurrent();
+      // rollerRightCurrent = rollerRight.getOutputCurrent();
       armAngle = getArmDegrees();
       appliedVoltage = armLeader.getMotorVoltage().getValueAsDouble();
     }

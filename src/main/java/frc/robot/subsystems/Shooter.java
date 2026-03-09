@@ -175,7 +175,12 @@ public class Shooter extends SubsystemBase {
     closedLoop = false;
 
     if (hardwareEnabled) {
-      leader.setControl(voltageOut.withOutput(percent * 12.0));
+
+      double appliedVolts = leader.getMotorVoltage().getValueAsDouble();
+      double oldpercent = appliedVolts / 12.0;
+      double newPercent = oldpercent + percent;
+      if (newPercent == 0) newPercent = Math.signum(percent) * .01;
+      leader.setControl(voltageOut.withOutput(newPercent * 12.0));
     }
   }
 

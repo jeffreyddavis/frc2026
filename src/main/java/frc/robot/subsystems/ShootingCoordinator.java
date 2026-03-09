@@ -7,6 +7,7 @@ import frc.robot.FlipUtil;
 import frc.robot.shot.ShotController;
 import frc.robot.shot.ShotSolution;
 import frc.robot.subsystems.drive.Drive;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -52,6 +53,8 @@ public class ShootingCoordinator extends SubsystemBase {
   private double shotRequestStartTime = 0;
   private boolean timingShot = false;
   private static final double SHOOT_FALLBACK_TIME = 0.6; // seconds
+
+  @AutoLogOutput private boolean trenchBlocked = false;
 
   private final LoggedNetworkNumber rpmTrimPercent =
       new LoggedNetworkNumber("Shooting/rpmTrimPercent", 0.0);
@@ -114,17 +117,17 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     // HARD trench protection
     // ----------------------------
-    boolean trenchBlocked =
+    trenchBlocked =
         (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
-
-    if (trenchBlocked) {
-      hood.setPositionMm(0);
-      loader.stop();
-      spindexer.stop();
-      logState(false, false);
-      return;
-    }
-
+    /*
+       if (trenchBlocked) {
+         hood.setPositionMm(0);
+         loader.stop();
+         spindexer.stop();
+         logState(false, false);
+         return;
+       }
+    */
     // ----------------------------
     // Hood Targeting (AUTO_AIM only)
     // ----------------------------
@@ -181,7 +184,8 @@ public class ShootingCoordinator extends SubsystemBase {
       timingShot = false;
     }
 
-    boolean shooterReady = shooter.isAtSetpoint();
+    // boolean shooterReady = shooter.isAtSetpoint();
+    boolean shooterReady = true;
 
     boolean timeoutReady = timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
 
@@ -190,8 +194,8 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     // Readiness Check
     // ----------------------------
-    boolean readyToFire =
-        speedGate && turret.isAtSetpoint() && hood.isAtSetpoint() && robotHealth.fieldReady;
+    boolean readyToFire = true;
+    // speedGate && turret.isAtSetpoint() && hood.isAtSetpoint() && robotHealth.fieldReady;
 
     // ----------------------------
     // Feed Gate
@@ -223,9 +227,9 @@ public class ShootingCoordinator extends SubsystemBase {
       return ShotType.BLOCKED;
     }
 
-    if (!robotHealth.fieldReady) {
-      return ShotType.NONE;
-    }
+    // if (!robotHealth.fieldReady) {
+    //  return ShotType.NONE;
+    // }
 
     if (robotHealth.inAllianceZone) {
       return ShotType.SHOOT;

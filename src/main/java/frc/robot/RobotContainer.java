@@ -32,6 +32,7 @@ import frc.robot.commands.WaitForShooterReady;
 import frc.robot.generated.TunerConstants;
 import frc.robot.shot.ShotController;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -65,8 +66,8 @@ public class RobotContainer {
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
   private final JoystickButton manualLoader = new JoystickButton(stick, 8);
 
-  private final POVButton hoodUp = new POVButton(stick, 180);
-  private final POVButton hoodDown = new POVButton(stick, 0);
+  private final POVButton hoodUp = new POVButton(stick, 0);
+  private final POVButton hoodDown = new POVButton(stick, 180);
 
   private final POVButton turretRight = new POVButton(stick, 90);
   private final POVButton turretLeft = new POVButton(stick, 270);
@@ -76,7 +77,7 @@ public class RobotContainer {
 
   private final JoystickButton resetGyro = new JoystickButton(stick, 14);
 
-  // private final ShootingCoordinator coordinator;
+  private final ShootingCoordinator coordinator;
   private final Shooter shooter;
   private final Turret turret;
   private final Hood hood;
@@ -166,11 +167,11 @@ public class RobotContainer {
     shotController.forceDisableTuning();
 
     RobotHealth robotHealth = new RobotHealth(drive, m_QuestNav, vision);
-    /*
-       coordinator =
-           new ShootingCoordinator(
-               shooter, turret, hood, loader, spindexer, robotHealth, shotController, drive);
-    */
+
+    coordinator =
+        new ShootingCoordinator(
+            shooter, turret, hood, loader, spindexer, robotHealth, shotController, drive);
+
     // Configure the button bindings
     configureButtonBindings();
     addNamedCommands();
@@ -206,7 +207,7 @@ public class RobotContainer {
 
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
-    shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
+    // shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
 
     intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
@@ -236,9 +237,9 @@ public class RobotContainer {
 
     /* ================= SHOOT REQUEST ================= */
 
-    // trigger.onTrue(new InstantCommand(() -> coordinator.setRequestShot(true)));
+    trigger.onTrue(new InstantCommand(() -> coordinator.setRequestShot(true)));
 
-    // trigger.onFalse(new InstantCommand(() -> coordinator.setRequestShot(false)));
+    trigger.onFalse(new InstantCommand(() -> coordinator.setRequestShot(false)));
 
     /* ================= INTAKE ================= */
     /*
@@ -289,21 +290,23 @@ public class RobotContainer {
               manualLoader
                   .whileTrue(new RunCommand(() -> loader.feed()))
                   .onFalse(new InstantCommand(() -> loader.stop()));
-
-           hoodUp.whileTrue(
-               new RunCommand(
-                   () -> {
-                     coordinator.setMode(ShootingMode.MANUAL);
-                     hood.incrementUp();
-                   }));
-
-           hoodDown.whileTrue(
-               new RunCommand(
-                   () -> {
-                     coordinator.setMode(ShootingMode.MANUAL);
-                     hood.incrementDown();
-                   }));
     */
+    hoodUp.whileTrue(
+        new RunCommand(
+            () -> {
+              coordinator.setMode(ShootingMode.MANUAL);
+              // hood.extendFully();
+              hood.incrementUp();
+            }));
+
+    hoodDown.whileTrue(
+        new RunCommand(
+            () -> {
+              coordinator.setMode(ShootingMode.MANUAL);
+              // hood.retract();
+              hood.incrementDown();
+            }));
+
     turretLeft.whileTrue(
         new RunCommand(
             () -> {
@@ -320,9 +323,7 @@ public class RobotContainer {
             },
             turret));
 
-    shooterEnable
-        .whileTrue(new RunCommand(() -> shooter.enableClosedLoop()))
-        .onFalse(new InstantCommand(() -> shooter.disable()));
+    shooterEnable.onTrue(new RunCommand(() -> shooter.enableClosedLoop()));
     /*
     passMode.onTrue(
         new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM))); */

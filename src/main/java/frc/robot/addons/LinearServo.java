@@ -30,7 +30,7 @@ public class LinearServo extends Servo {
         );
 
     // Start retracted (1.0ms)
-    set(0.0);
+    // set(0.0);
   }
 
   /** Command position in mm. 0mm=retract, lengthMm=extend. */
@@ -47,10 +47,10 @@ public class LinearServo extends Servo {
   }
 
   public void retract() {
-    setPositionMm(0.0);
+    setPositionMm(5.0);
   }
 
   public void extend() {
-    setPositionMm(lengthMm);
+    setPositionMm(lengthMm - 5.0);
   }
 }

@@ -26,6 +26,9 @@ public class Turret extends SubsystemBase {
   private final LoggedNetworkNumber targetAngleDeg =
       new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
 
+  private final LoggedNetworkNumber lookAheadSeconds =
+      new LoggedNetworkNumber("Turret/lookAheadSeconds", 0.0);
+
   // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.00002);
 
   // private final LoggedNetworkNumber kSVolts = new LoggedNetworkNumber("Turret/kSVolts", 0.0);
@@ -114,7 +117,15 @@ public class Turret extends SubsystemBase {
     double current = hardwareEnabled ? getTurretAngleDegrees() : 0.0;
 
     double target = targetAngleDeg.get();
-    double delta = computeSafeDelta(current, target);
+
+    // prediction horizon (seconds)
+    double lookahead = Constants.Turret.OMEGA_LOOKAHEAD;
+
+    // predict where the target will be
+    double predictedTarget = target - (robotOmegaDegPerSec * lookahead);
+    // double predictedTarget = target + (lookAheadSeconds.get() * robotOmegaDegPerSec);
+
+    double delta = computeSafeDelta(current, predictedTarget);
 
     Logger.recordOutput("Turret/CurrentDeg", current);
     Logger.recordOutput("Turret/TargetDeg", target);
@@ -122,7 +133,7 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Turret/ClosedLoop", closedLoop);
     Logger.recordOutput("Turret/HardwareEnabled", hardwareEnabled);
     Logger.recordOutput("Turret/RobotOmegaDegPerSec", robotOmegaDegPerSec);
-    Logger.recordOutput("Turret/FFContribution", robotOmegaDegPerSec * Constants.Turret.kFF);
+    Logger.recordOutput("Turret/predictedTarget", predictedTarget);
 
     if (!closedLoop) return;
 
@@ -134,7 +145,7 @@ public class Turret extends SubsystemBase {
       return;
     }
 
-    double output = (delta * Constants.Turret.kP) + (robotOmegaDegPerSec * Constants.Turret.kFF);
+    double output = (delta * Constants.Turret.kP);
 
     // kP.get();
 

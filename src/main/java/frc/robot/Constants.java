@@ -86,18 +86,19 @@ public final class Constants {
 
     public static final double kP = .007;
     public static final double kS = .2;
-    public static final double maxOutput = .95;
+    public static final double maxOutput = .25;
     public static final double toleranceDeg = .1;
-    public static final double kFF = 0.0016;
+    public static final double OMEGA_LOOKAHEAD = .26;
+    ;
   }
 
   public static final class Loader {
     public static final int Motor = 40;
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Hood {
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
     public static final double distanceToleranceMM = 1;
   }
 
@@ -116,11 +117,11 @@ public final class Constants {
   }
 
   public static final class Shooter {
-    public static final int LeftMotor = 70;
-    public static final int RightMotor = 71;
+    public static final int LeftMotor = 36;
+    public static final int RightMotor = 35;
     public static final double PassRPM = 3000.0;
     public static final double AutoRPM = 3500.0;
     public static final double RPSTolerance = 5.0;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 }

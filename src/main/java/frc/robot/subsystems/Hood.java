@@ -7,6 +7,7 @@ import frc.robot.Constants;
 import frc.robot.addons.LinearServo;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public class Hood extends SubsystemBase {
 
@@ -28,7 +29,7 @@ public class Hood extends SubsystemBase {
   private LinearServo m_rightHood;
 
   // Track commanded state (since we don’t have feedback)
-  private double lastCommandedMm = 0.0;
+  @AutoLogOutput private double lastCommandedMm = 0.0;
   private double motionCompleteTime = 0.0;
 
   // Spec: 20 mm/sec
@@ -36,8 +37,8 @@ public class Hood extends SubsystemBase {
 
   public Hood() {
     if (hardwareEnabled) {
-      m_leftHood = new LinearServo(9, 100);
-      m_rightHood = new LinearServo(8, 100);
+      m_leftHood = new LinearServo(0, 100);
+      m_rightHood = new LinearServo(1, 100);
     }
   }
 
@@ -52,8 +53,8 @@ public class Hood extends SubsystemBase {
 
     // Estimate time to move
     double distance = Math.abs(positionMm - lastCommandedMm);
-    if (distance <= Constants.Hood.distanceToleranceMM)
-      return; // don't command the servo repeatedly
+    // if (distance <= Constants.Hood.distanceToleranceMM)
+    //  return; // don't command the servo repeatedly
     double travelTime = distance / MM_PER_SECOND;
 
     lastCommandedMm = positionMm;
@@ -94,11 +95,13 @@ public class Hood extends SubsystemBase {
   }
 
   public void incrementUp() {
-    setPositionMm(lastCommandedMm + 1);
+    lastCommandedMm++;
+    setPositionMm(lastCommandedMm);
   }
 
   public void incrementDown() {
-    setPositionMm(lastCommandedMm - 1);
+    lastCommandedMm--;
+    setPositionMm(lastCommandedMm);
   }
 
   public boolean isAtSetpoint() {
