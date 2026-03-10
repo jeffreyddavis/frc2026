@@ -82,7 +82,7 @@ public final class Constants {
     public static final double FORBIDDEN_LIMIT_DEG = 180.0;
     public static final double FORBIDDEN_BUFFER_DEG = 5.0; // safety margin
     public static final double GEAR_RATIO = 10.0; // example
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
 
     public static final double kP = .007;
     public static final double kS = .2;
@@ -94,7 +94,7 @@ public final class Constants {
 
   public static final class Loader {
     public static final int Motor = 40;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 
   public static final class Hood {

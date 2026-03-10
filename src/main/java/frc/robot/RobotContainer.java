@@ -57,11 +57,11 @@ public class RobotContainer {
   private final JoystickButton trigger = new JoystickButton(stick, 1);
   private final JoystickButton toggleAuto = new JoystickButton(stick, 2);
 
-  private final JoystickButton intakeIn = new JoystickButton(stick, 3);
-  private final JoystickButton intakeReverse = new JoystickButton(stick, 4);
+  private final JoystickButton intakeIn = new JoystickButton(stick, 5);
+  private final JoystickButton intakeReverse = new JoystickButton(stick, 6);
 
-  private final JoystickButton deployArm = new JoystickButton(stick, 5);
-  private final JoystickButton retractArm = new JoystickButton(stick, 6);
+  private final JoystickButton deployArm = new JoystickButton(stick, 3);
+  private final JoystickButton retractArm = new JoystickButton(stick, 4);
 
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
   private final JoystickButton manualLoader = new JoystickButton(stick, 8);
@@ -210,7 +210,7 @@ public class RobotContainer {
     // shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
 
-    intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
+    // intake.setDefaultCommand(Commands.run(() -> intake.goToArbitrayAngle(), intake));
 
     // loader.setDefaultCommand(Commands.runOnce(() -> loader.feed(), loader));
     /*
@@ -273,13 +273,9 @@ public class RobotContainer {
     */
     /* ================= ARM ================= */
 
-    deployArm
-        .whileTrue(new RunCommand(() -> intake.deploy()))
-        .onFalse(new InstantCommand(() -> intake.stopArm()));
+    deployArm.onTrue(new InstantCommand(() -> intake.deploy()));
 
-    retractArm
-        .whileTrue(new RunCommand(() -> intake.retract()))
-        .onFalse(new InstantCommand(() -> intake.stopArm()));
+    retractArm.onTrue(new InstantCommand(() -> intake.retract()));
 
     /* ================= MANUAL OVERRIDES ================= */
     /*
