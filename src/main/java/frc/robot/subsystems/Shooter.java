@@ -22,7 +22,7 @@ public class Shooter extends SubsystemBase {
   private final VelocityTorqueCurrentFOC velocityFOC = new VelocityTorqueCurrentFOC(0.0);
 
   // AdvantageKit tunables
-  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", 0.1);
+  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", 1);
 
   private final LoggedNetworkNumber kD = new LoggedNetworkNumber("Shooter/kD", 0.0);
 

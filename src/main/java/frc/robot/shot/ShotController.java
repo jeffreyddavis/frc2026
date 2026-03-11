@@ -8,6 +8,7 @@ import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+import edu.wpi.first.math.util.Units;
 
 public class ShotController {
 
@@ -57,11 +58,11 @@ public class ShotController {
   public ShotController() {
 
     // Use helper method so bounds auto-update
-    addShotPoint(1.0, new ShotParams(55.0, 3200.0, 0.25));
-    addShotPoint(2.0, new ShotParams(45.0, 3600.0, 0.35));
-    addShotPoint(3.0, new ShotParams(38.0, 4000.0, 0.45));
-    addShotPoint(4.0, new ShotParams(32.0, 4300.0, 0.55));
-    addShotPoint(5.0, new ShotParams(28.0, 4600.0, 0.65));
+    addShotPoint(Units.inchesToMeters(44), new ShotParams(0, 3180.0, 1.2));
+    addShotPoint(Units.inchesToMeters(73), new ShotParams(37, 3600.0, 1.25));
+    addShotPoint(Units.inchesToMeters(100), new ShotParams(40, 3820, 1.3));
+    addShotPoint(Units.inchesToMeters(146), new ShotParams(48, 3820, 1.3));
+    addShotPoint(5.0, new ShotParams(56, 3820, 1.3));
   }
 
   private void addShotPoint(double distance, ShotParams params) {
