@@ -230,11 +230,12 @@ public class Turret extends SubsystemBase {
 
     double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
     //
-    target = MathUtil.clamp(target, -maxAllowed, maxAllowed);
-    // -176
+    target =
+        MathUtil.clamp(target, Constants.Turret.TURRET_MIN_DEG, Constants.Turret.TURRET_MAX_DEG);
+    // -174
 
     double delta = target - current;
-    // -176 - 176
+    // -174 - 176
 
     // if (delta > 180) delta -= 360;
     // if (delta < -180) delta += 360;

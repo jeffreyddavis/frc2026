@@ -203,7 +203,14 @@ public class RobotContainer {
             () -> -stick.getRawAxis(2)));
 
     // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller
+        .x()
+        .onTrue(Commands.runOnce(() -> intake.jogUp(), intake))
+        .onFalse(Commands.runOnce(() -> intake.stopArm()));
+    controller
+        .y()
+        .onTrue(Commands.runOnce(() -> intake.jogDown(), intake))
+        .onFalse(Commands.runOnce(() -> intake.stopArm()));
 
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -30,19 +31,15 @@ public class Intake extends SubsystemBase {
 
   private final VoltageOut armVoltage = new VoltageOut(0.0);
 
-  private static final double ARM_MIN = 2.0;
-  private static final double ARM_MAX = 90;
+  private static final double ARM_MIN = 0;
+  private static final double ARM_MAX = 100;
+
+  private static boolean closedloopControl = true;
 
   private SparkFlex rollerLeft;
   private SparkFlex rollerRight;
 
   /* ===================== Tunables ===================== */
-
-  private final LoggedNetworkNumber deployPercent =
-      new LoggedNetworkNumber("Intake/ArmDeployPercent", 0.0);
-
-  private final LoggedNetworkNumber retractPercent =
-      new LoggedNetworkNumber("Intake/ArmRetractPercent", -0.0);
 
   private final LoggedNetworkNumber armCurrentLimit =
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
@@ -58,6 +55,10 @@ public class Intake extends SubsystemBase {
 
   private final LoggedNetworkNumber arbitraryAngle =
       new LoggedNetworkNumber("Intake/arbitraryAngle", 45);
+
+  private final LoggedNetworkNumber jogPower = new LoggedNetworkNumber("Intake/jogPower", .2);
+
+  private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 4);
 
   // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Intake/kP", 20);
   private final double kP = .7;
@@ -143,12 +144,24 @@ public class Intake extends SubsystemBase {
     return armEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
+  public void jogDown() {
+    closedloopControl = false;
+    DutyCycleOut duty = new DutyCycleOut(-jogPower.get());
+    armLeader.setControl(duty);
+  }
+
+  public void jogUp() {
+    closedloopControl = false;
+    DutyCycleOut duty = new DutyCycleOut(jogPower.get());
+    armLeader.setControl(duty);
+  }
+
   /* ===================== Periodic ===================== */
 
   @Override
   public void periodic() {
 
-    if (hardwareEnabled) {
+    if (hardwareEnabled && closedloopControl) {
 
       double newLimit = armCurrentLimit.get();
       if (Math.abs(newLimit - lastArmLimit) > 1e-6) {
@@ -179,7 +192,7 @@ public class Intake extends SubsystemBase {
         voltage = kG * Math.cos(Math.toRadians(angle));
       }
       // Clamp
-      voltage = Math.max(-4, Math.min(4, voltage));
+      voltage = Math.max(-maxVolts.get(), Math.min(maxVolts.get(), voltage));
 
       armVoltage.Output = voltage;
       armLeader.setControl(armVoltage);
@@ -209,7 +222,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void retract() {
-    moveToAngle(90);
+    moveToAngle(100);
     stopRollers();
   }
 
