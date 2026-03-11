@@ -62,7 +62,7 @@ public class ShotController {
     addShotPoint(Units.inchesToMeters(73), new ShotParams(37, 3600.0, 1.25));
     addShotPoint(Units.inchesToMeters(100), new ShotParams(40, 3820, 1.3));
     addShotPoint(Units.inchesToMeters(146), new ShotParams(48, 3820, 1.3));
-    addShotPoint(5.0, new ShotParams(56, 3820, 1.3));
+    addShotPoint(Units.inchesToMeters(184), new ShotParams(56, 3820, 1.3));
   }
 
   private void addShotPoint(double distance, ShotParams params) {
