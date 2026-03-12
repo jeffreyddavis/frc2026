@@ -9,6 +9,8 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class FlipUtil {
   public static double applyX(double x) {
@@ -46,9 +48,14 @@ public class FlipUtil {
     return new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()));
   }
 
+  @AutoLogOutput
   public static boolean shouldFlip() {
-    return !Constants.disableHAL
-        && DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+    boolean ShouldFlip =
+        !Constants.disableHAL
+            && DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+    Logger.recordOutput("ShouldFlip/Should", ShouldFlip);
+
+    return ShouldFlip;
   }
 }

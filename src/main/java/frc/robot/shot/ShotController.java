@@ -5,10 +5,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-import edu.wpi.first.math.util.Units;
 
 public class ShotController {
 
@@ -36,6 +37,8 @@ public class ShotController {
 
   private final InterpolatingTreeMap<Double, ShotParams> shotMap =
       new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), (a, b, t) -> a.interpolate(b, t));
+
+  @AutoLogOutput private double shotDistance = 0.0;
 
   private double minDistance = Double.POSITIVE_INFINITY;
   private double maxDistance = Double.NEGATIVE_INFINITY;

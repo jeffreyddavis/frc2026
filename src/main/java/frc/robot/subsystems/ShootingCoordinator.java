@@ -46,13 +46,16 @@ public class ShootingCoordinator extends SubsystemBase {
 
   /* ===================== State ===================== */
 
-  private ShootingMode currentMode = ShootingMode.MANUAL;
+  @AutoLogOutput private ShootingMode currentMode = ShootingMode.MANUAL;
   private boolean requestShot = false;
-  private ShotType currentShotType = ShotType.NONE;
+  @AutoLogOutput private ShotType currentShotType = ShotType.NONE;
 
   private double shotRequestStartTime = 0;
   private boolean timingShot = false;
   private static final double SHOOT_FALLBACK_TIME = 0.6; // seconds
+
+  @AutoLogOutput private Translation2d target;
+  @AutoLogOutput private Translation2d Unflippedtarget;
 
   @AutoLogOutput private boolean trenchBlocked = false;
 
@@ -128,6 +131,24 @@ public class ShootingCoordinator extends SubsystemBase {
          return;
        }
     */
+
+    switch (currentShotType) {
+      case SHOOT:
+        Unflippedtarget = FieldConstants.Hub.innerCenterPoint.toTranslation2d();
+        target = FlipUtil.apply(Unflippedtarget);
+        // target = Unflippedtarget; // ????
+        break;
+      case PASS:
+        target = getPassTarget();
+        break;
+
+      case NONE:
+      case BLOCKED:
+      default:
+        // Do nothing special
+        break;
+    }
+
     // ----------------------------
     // Hood Targeting (AUTO_AIM only)
     // ----------------------------
@@ -137,9 +158,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case SHOOT:
           ShotSolution solution =
               shotController.calculate(
-                  drive.getPose().getTranslation(),
-                  drive.getFieldRelativeVelocity(),
-                  FieldConstants.Hub.innerCenterPoint.toTranslation2d());
+                  drive.getPose().getTranslation(), drive.getFieldRelativeVelocity(), target);
 
           turret.setFieldTargetAngle(
               solution.turretDegrees(),
@@ -153,9 +172,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case PASS:
           ShotSolution passSolution =
               shotController.calculate(
-                  drive.getPose().getTranslation(),
-                  drive.getFieldRelativeVelocity(),
-                  getPassTarget());
+                  drive.getPose().getTranslation(), drive.getFieldRelativeVelocity(), target);
 
           turret.setFieldTargetAngle(
               passSolution.turretDegrees(),

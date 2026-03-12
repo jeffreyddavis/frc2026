@@ -7,8 +7,8 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Shooter extends SubsystemBase {
 
@@ -19,19 +19,23 @@ public class Shooter extends SubsystemBase {
 
   // Control requests (reuse objects)
   private final VoltageOut voltageOut = new VoltageOut(0.0);
-  private final VelocityTorqueCurrentFOC velocityFOC = new VelocityTorqueCurrentFOC(0.0);
+  private final VelocityVoltage velocityFOC = new VelocityVoltage(0.0);
 
   // AdvantageKit tunables
-  private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", 1);
+  // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Shooter/kP", .001);
 
-  private final LoggedNetworkNumber kD = new LoggedNetworkNumber("Shooter/kD", 0.0);
+  // private final LoggedNetworkNumber kD = new LoggedNetworkNumber("Shooter/kD", 0.0);
 
-  private final LoggedNetworkNumber targetRPM =
-      new LoggedNetworkNumber("Shooter/TargetRPM", 2000.0);
+  // private final LoggedNetworkNumber targetRPM =
+  //    new LoggedNetworkNumber("Shooter/TargetRPM", 2000.0);
 
-  // Gain tracking
-  private double lastKP;
-  private double lastKD;
+  @AutoLogOutput private double targetRPM = 0;
+
+  // private final LoggedNetworkNumber kV = new LoggedNetworkNumber("Shooter/kV", 0.12);
+
+  private static final double kP = 0.1;
+  private static final double kD = 0.0;
+  private static final double kV = 0.1159;
 
   // State
   private boolean closedLoop = true;
@@ -61,9 +65,12 @@ public class Shooter extends SubsystemBase {
       config.CurrentLimits.StatorCurrentLimit = 110;
 
       // Initial gains
-      config.Slot0.kP = kP.get();
-      config.Slot0.kD = kD.get();
+      config.Slot0.kP = kP;
+      config.Slot0.kD = kD;
+      config.Slot0.kV = kV;
       config.Slot0.kI = 0.0;
+      velocityFOC.withSlot(0);
+      velocityFOC.withEnableFOC(true);
 
       leader.getConfigurator().apply(config);
       follower.getConfigurator().apply(config);
@@ -78,18 +85,13 @@ public class Shooter extends SubsystemBase {
       leader.getMotorVoltage().setUpdateFrequency(100);
       leader.optimizeBusUtilization();
     }
-
-    lastKP = kP.get();
-    lastKD = kD.get();
   }
 
   @Override
   public void periodic() {
 
-    updateGainsIfChanged();
-
     if (hardwareEnabled && closedLoop) {
-      double rpm = targetRPM.get();
+      double rpm = targetRPM;
       double rps = rpm / 60.0;
       lastTargetRPS = rps;
 
@@ -110,24 +112,6 @@ public class Shooter extends SubsystemBase {
     }
 
     logTelemetry();
-  }
-
-  private void updateGainsIfChanged() {
-    double currentKP = kP.get();
-    double currentKD = kD.get();
-
-    if (Math.abs(currentKP - lastKP) > 1e-6 || Math.abs(currentKD - lastKD) > 1e-6) {
-
-      if (hardwareEnabled) {
-        config.Slot0.kP = currentKP;
-        config.Slot0.kD = currentKD;
-        config.Slot0.kI = 0.0;
-        leader.getConfigurator().apply(config);
-      }
-
-      lastKP = currentKP;
-      lastKD = currentKD;
-    }
   }
 
   private void logTelemetry() {
@@ -153,8 +137,6 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/AppliedVolts", appliedVolts);
     Logger.recordOutput("Shooter/ClosedLoop", closedLoop);
     Logger.recordOutput("Shooter/HardwareEnabled", hardwareEnabled);
-    Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
-
     Logger.recordOutput("Shooter/StableTime", timeWithinTolerance);
   }
 
@@ -199,7 +181,7 @@ public class Shooter extends SubsystemBase {
   public void setTargetRPM(double rpm) {
 
     // Update NT target so it shows in AdvantageScope
-    targetRPM.set(rpm);
+    targetRPM = rpm;
 
     closedLoop = true;
 

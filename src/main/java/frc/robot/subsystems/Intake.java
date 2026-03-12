@@ -11,7 +11,13 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -39,19 +45,24 @@ public class Intake extends SubsystemBase {
   private SparkFlex rollerLeft;
   private SparkFlex rollerRight;
 
+  private RelativeEncoder rollerLeftEncoder;
+  private RelativeEncoder rollerRightEncoder;
+
+  private SparkClosedLoopController rollerLeftPID;
+  private SparkClosedLoopController rollerRightPID;
+
   /* ===================== Tunables ===================== */
 
   private final LoggedNetworkNumber armCurrentLimit =
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
 
-  private final LoggedNetworkNumber intakePercent =
-      new LoggedNetworkNumber("Intake/RollerIntakePercent", 0.0);
+  private final LoggedNetworkNumber intakeRPM =
+      new LoggedNetworkNumber("Intake/RollerIntakeRPM", 3000);
 
-  private final LoggedNetworkNumber outtakePercent =
-      new LoggedNetworkNumber("Intake/RollerOuttakePercent", -0.1);
+  private final LoggedNetworkNumber outtakeRPM =
+      new LoggedNetworkNumber("Intake/RollerOuttakeRPM", -1500);
 
-  private final LoggedNetworkNumber holdPercent =
-      new LoggedNetworkNumber("Intake/RollerHoldPercent", 0.1);
+  private final LoggedNetworkNumber holdRPM = new LoggedNetworkNumber("Intake/RollerHoldRPM", 500);
 
   private final LoggedNetworkNumber arbitraryAngle =
       new LoggedNetworkNumber("Intake/arbitraryAngle", 45);
@@ -59,6 +70,24 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber jogPower = new LoggedNetworkNumber("Intake/jogPower", .2);
 
   private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 4);
+
+  private final LoggedNetworkNumber jamVelocityThreshold =
+      new LoggedNetworkNumber("Intake/JamVelocityRPM", 300);
+
+  private final LoggedNetworkNumber jamCurrentThreshold =
+      new LoggedNetworkNumber("Intake/JamCurrent", 35);
+
+  private boolean clearingJam = false;
+  private double jamTimer = 0;
+
+  private enum ClearMode {
+    NONE,
+    JAM,
+    AGITATE
+  }
+
+  private ClearMode clearMode = ClearMode.NONE;
+  private double clearTimer = 0;
 
   // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Intake/kP", 20);
   private final double kP = .7;
@@ -75,7 +104,8 @@ public class Intake extends SubsystemBase {
   /* ===================== State ===================== */
 
   private double armCommanded = 0.0;
-  private double rollerCommanded = 0.0;
+
+  @AutoLogOutput private double rollerCommanded = 0.0;
   private double lastArmLimit = 0.0;
 
   @AutoLogOutput private double armTargetDegrees = 0.0;
@@ -127,9 +157,44 @@ public class Intake extends SubsystemBase {
     armLeader.optimizeBusUtilization();
   }
 
+  public void requestJamClear() {
+    if (clearMode == ClearMode.NONE) {
+      clearMode = ClearMode.JAM;
+      clearTimer = 0;
+    }
+  }
+
+  public void requestAgitate() {
+    if (clearMode == ClearMode.NONE) {
+      clearMode = ClearMode.AGITATE;
+      clearTimer = 0;
+    }
+  }
+
+  public void reconfigureRollers() {
+    configureRollers();
+  }
+
   private void configureRollers() {
-    rollerLeft.set(0);
-    rollerRight.set(0);
+
+    SparkFlexConfig leftConfig = new SparkFlexConfig();
+    SparkFlexConfig rightConfig = new SparkFlexConfig();
+
+    leftConfig.closedLoop.p(0.00021).i(0).d(0);
+    rightConfig.closedLoop.p(0.00021).i(0).d(0);
+
+    rollerLeft.configure(
+        leftConfig,
+        SparkBase.ResetMode.kResetSafeParameters,
+        SparkBase.PersistMode.kPersistParameters);
+
+    rollerRight.configure(
+        rightConfig,
+        SparkBase.ResetMode.kResetSafeParameters,
+        SparkBase.PersistMode.kPersistParameters);
+
+    rollerLeftPID = rollerLeft.getClosedLoopController();
+    rollerRightPID = rollerRight.getClosedLoopController();
   }
 
   @AutoLogOutput
@@ -162,6 +227,24 @@ public class Intake extends SubsystemBase {
   public void periodic() {
 
     if (hardwareEnabled && closedloopControl) {
+
+      double rpm = rollerLeft.getEncoder().getVelocity();
+      double current = rollerLeft.getOutputCurrent();
+
+      boolean jamDetected =
+          Math.abs(rpm) < jamVelocityThreshold.get()
+              && Math.abs(current) > jamCurrentThreshold.get();
+
+      if (jamDetected) jamTimer += 0.02;
+      else jamTimer = 0;
+
+      if (jamTimer > 0.1 && clearMode == ClearMode.NONE) {
+        // requestJamClear();
+      }
+
+      if (clearMode != ClearMode.NONE) {
+        runClearRoutine();
+      }
 
       double newLimit = armCurrentLimit.get();
       if (Math.abs(newLimit - lastArmLimit) > 1e-6) {
@@ -203,6 +286,35 @@ public class Intake extends SubsystemBase {
     logTelemetry();
   }
 
+  private void runClearRoutine() {
+
+    clearTimer += 0.02;
+
+    if (clearMode == ClearMode.JAM) {
+
+      if (clearTimer < 0.15) {
+        stopRollers();
+        moveToAngle(80);
+      } else if (clearTimer < 0.35) {
+        moveToAngle(3);
+      } else {
+        intake();
+        clearMode = ClearMode.NONE;
+      }
+
+    } else if (clearMode == ClearMode.AGITATE) {
+
+      if (clearTimer < 0.35) {
+        moveToAngle(90); // slightly higher than normal retract
+      } else if (clearTimer < 0.75) {
+        moveToAngle(3);
+      } else {
+        intake();
+        clearMode = ClearMode.NONE;
+      }
+    }
+  }
+
   private void applyArmCurrentLimit(double limit) {
 
     CurrentLimitsConfigs limits =
@@ -217,7 +329,7 @@ public class Intake extends SubsystemBase {
   // Arm
 
   public void deploy() {
-    moveToAngle(0);
+    moveToAngle(3);
     intake();
   }
 
@@ -262,30 +374,30 @@ public class Intake extends SubsystemBase {
 
   // Rollers
   public void intake() {
-    rollerCommanded = intakePercent.get();
-    setRollerPercent(rollerCommanded);
+    setRollerVelocity(intakeRPM.get());
   }
 
   public void outtake() {
-    rollerCommanded = outtakePercent.get();
-    setRollerPercent(rollerCommanded);
+    setRollerVelocity(outtakeRPM.get());
   }
 
   public void hold() {
-    rollerCommanded = holdPercent.get();
-    setRollerPercent(rollerCommanded);
+    setRollerVelocity(holdRPM.get());
   }
 
   public void stopRollers() {
-    rollerCommanded = 0.0;
-    setRollerPercent(0.0);
+    setRollerVelocity(0);
   }
 
-  private void setRollerPercent(double percent) {
+  private void setRollerVelocity(double rpm) {
+
     if (!hardwareEnabled) return;
 
-    rollerLeft.set(percent);
-    rollerRight.set(-percent);
+    rollerCommanded = rpm;
+
+    rollerLeftPID.setReference(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+
+    rollerRightPID.setReference(-rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   /* ===================== Logging ===================== */
@@ -300,8 +412,8 @@ public class Intake extends SubsystemBase {
 
     if (hardwareEnabled) {
       armSupplyCurrent = armLeader.getSupplyCurrent().getValueAsDouble();
-      // rollerLeftCurrent = rollerLeft.getOutputCurrent();
-      // rollerRightCurrent = rollerRight.getOutputCurrent();
+      rollerLeftCurrent = rollerLeft.getOutputCurrent();
+      rollerRightCurrent = rollerRight.getOutputCurrent();
       armAngle = getArmDegrees();
       appliedVoltage = armLeader.getMotorVoltage().getValueAsDouble();
     }

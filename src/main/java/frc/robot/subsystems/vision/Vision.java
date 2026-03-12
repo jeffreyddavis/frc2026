@@ -96,7 +96,8 @@ public class Vision extends SubsystemBase {
     // Loop over cameras
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
 
-      if (io[cameraIndex].getName() == "limelight-turret" && !DriverStation.isDisabled()) continue; // don't use turret camera when enabled
+      if (io[cameraIndex].getName() == "limelight-turret" && !DriverStation.isDisabled())
+        continue; // don't use turret camera when enabled
 
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);

@@ -15,6 +15,7 @@ import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -105,30 +106,32 @@ public class VisionIOLimelight implements VisionIO {
               // Observation type
               PoseObservationType.MEGATAG_1));
     }
-    for (var rawSample : megatag2Subscriber.readQueue()) {
-      if (rawSample.value.length == 0) continue;
-      for (int i = 11; i < rawSample.value.length; i += 7) {
-        tagIds.add((int) rawSample.value[i]);
+    if (false && DriverStation.isEnabled()) {
+      for (var rawSample : megatag2Subscriber.readQueue()) {
+        if (rawSample.value.length == 0) continue;
+        for (int i = 11; i < rawSample.value.length; i += 7) {
+          tagIds.add((int) rawSample.value[i]);
+        }
+        poseObservations.add(
+            new PoseObservation(
+                // Timestamp, based on server timestamp of publish and latency
+                rawSample.timestamp * 1.0e-6 - rawSample.value[6] * 1.0e-3,
+
+                // 3D pose estimate
+                parsePose(rawSample.value),
+
+                // Ambiguity, zeroed because the pose is already disambiguated
+                0.0,
+
+                // Tag count
+                (int) rawSample.value[7],
+
+                // Average tag distance
+                rawSample.value[9],
+
+                // Observation type
+                PoseObservationType.MEGATAG_2));
       }
-      poseObservations.add(
-          new PoseObservation(
-              // Timestamp, based on server timestamp of publish and latency
-              rawSample.timestamp * 1.0e-6 - rawSample.value[6] * 1.0e-3,
-
-              // 3D pose estimate
-              parsePose(rawSample.value),
-
-              // Ambiguity, zeroed because the pose is already disambiguated
-              0.0,
-
-              // Tag count
-              (int) rawSample.value[7],
-
-              // Average tag distance
-              rawSample.value[9],
-
-              // Observation type
-              PoseObservationType.MEGATAG_2));
     }
 
     // Save pose observations to inputs object

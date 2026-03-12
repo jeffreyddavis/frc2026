@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutoAimOn;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
@@ -29,7 +30,6 @@ import frc.robot.commands.Shoot;
 import frc.robot.commands.StartShooter;
 import frc.robot.commands.StopShoot;
 import frc.robot.commands.WaitForShooterReady;
-import frc.robot.commands.AutoAimOn;
 import frc.robot.generated.TunerConstants;
 import frc.robot.shot.ShotController;
 import frc.robot.subsystems.*;
@@ -56,7 +56,7 @@ public class RobotContainer {
 
   // Buttons
   private final JoystickButton trigger = new JoystickButton(stick, 1);
-  private final JoystickButton toggleAuto = new JoystickButton(stick, 2);
+  private final JoystickButton EnableAuto = new JoystickButton(stick, 2);
 
   private final JoystickButton intakeIn = new JoystickButton(stick, 5);
   private final JoystickButton intakeReverse = new JoystickButton(stick, 6);
@@ -82,7 +82,7 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Turret turret;
   private final Hood hood;
-  private final Intake intake;
+  public final Intake intake;
   private final Loader loader;
   private final Spindexer spindexer;
   public final QuestNavSub m_QuestNav;
@@ -241,8 +241,8 @@ public class RobotContainer {
 
     /* ================= AUTO AIM MODE ================= */
 
-    // toggleAuto.onTrue(
-    //   new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM)));
+    EnableAuto.onTrue(
+        new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM)));
 
     /* ================= SHOOT REQUEST ================= */
 
@@ -315,7 +315,7 @@ public class RobotContainer {
     turretLeft.whileTrue(
         new RunCommand(
             () -> {
-              // coordinator.setMode(ShootingMode.MANUAL);
+              coordinator.setMode(ShootingMode.MANUAL);
               turret.jogLeft();
             },
             turret));
@@ -323,7 +323,7 @@ public class RobotContainer {
     turretRight.whileTrue(
         new RunCommand(
             () -> {
-              // coordinator.setMode(ShootingMode.MANUAL);
+              coordinator.setMode(ShootingMode.MANUAL);
               turret.jogRight();
             },
             turret));

@@ -82,8 +82,8 @@ public final class Constants {
     public static final double FORBIDDEN_LIMIT_DEG = 180.0;
     public static final double FORBIDDEN_BUFFER_DEG = 5.0; // safety margin
 
-    public static final double TURRET_MAX_DEG = 45;
-    public static final double TURRET_MIN_DEG = -100;
+    public static final double TURRET_MAX_DEG = 135;
+    public static final double TURRET_MIN_DEG = -15;
     public static final double GEAR_RATIO = 10.0; // example
     public static final boolean HardwareEnabled = true;
 
@@ -101,7 +101,7 @@ public final class Constants {
   }
 
   public static final class Hood {
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
     public static final double distanceToleranceMM = 1;
   }
 
@@ -125,6 +125,6 @@ public final class Constants {
     public static final double PassRPM = 3000.0;
     public static final double AutoRPM = 3500.0;
     public static final double RPSTolerance = 5.0;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 }

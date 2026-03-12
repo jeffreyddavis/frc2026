@@ -15,13 +15,7 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-
-import static edu.wpi.first.math.util.Units.inchesToMeters;
-
 import org.littletonrobotics.junction.AutoLogOutput;
-
 
 public class VisionConstants {
   // AprilTag layout
@@ -33,15 +27,17 @@ public class VisionConstants {
   public static String camera0Name = "limelight-left";
   public static String camera1Name = "limelight-right";
   public static String camera2Name = "limelight-turret";
-  //public static String camera3Name = "limelight-reefl";
-  //public static String camera4Name = "limelight-intake";
+  // public static String camera3Name = "limelight-reefl";
+  // public static String camera4Name = "limelight-intake";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
-  //public static Transform3d robotToCamera0 =
- //     new Transform3d(inchesToMeters(11.25), inchesToMeters(13), inchesToMeters(9.5), new Rotation3d(0.0, 0, 0));
- // public static Transform3d robotToCamera1 =
-  //    new Transform3d(-inchesToMeters(10), -inchesToMeters(18), inchesToMeters(14.25), new Rotation3d(0.0, 0, Math.toRadians(3)));
+  // public static Transform3d robotToCamera0 =
+  //     new Transform3d(inchesToMeters(11.25), inchesToMeters(13), inchesToMeters(9.5), new
+  // Rotation3d(0.0, 0, 0));
+  // public static Transform3d robotToCamera1 =
+  //    new Transform3d(-inchesToMeters(10), -inchesToMeters(18), inchesToMeters(14.25), new
+  // Rotation3d(0.0, 0, Math.toRadians(3)));
   // public static Transform3d robotToCamera2 =
   // new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
   // public static Transform3d robotToCamera3 =
@@ -54,17 +50,17 @@ public class VisionConstants {
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
   public static double linearStdDevBaseline = 0.02; // Meters
-  public static double angularStdDevBaseline = 0.06; // Radians
+  public static double angularStdDevBaseline = 0.04; // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
       new double[] {
-        300, // Camera 0
-        300, // Camera 1,
+        100, // Camera 0
+        100, // Camera 1,
         300, // Camera 2,
-     //   1.0, // Camera 3,
-     //   1.2 // Camera 4
+        //   1.0, // Camera 3,
+        //   1.2 // Camera 4
       };
 
   // Multipliers to apply for MegaTag 2 observations
