@@ -34,7 +34,7 @@ public class Shooter extends SubsystemBase {
   private double lastKD;
 
   // State
-  private boolean closedLoop = false;
+  private boolean closedLoop = true;
   private double lastTargetRPS = 0.0;
 
   private double timeWithinTolerance = 0.0;

@@ -29,6 +29,7 @@ import frc.robot.commands.Shoot;
 import frc.robot.commands.StartShooter;
 import frc.robot.commands.StopShoot;
 import frc.robot.commands.WaitForShooterReady;
+import frc.robot.commands.AutoAimOn;
 import frc.robot.generated.TunerConstants;
 import frc.robot.shot.ShotController;
 import frc.robot.subsystems.*;
@@ -105,7 +106,8 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOLimelight(camera0Name, drive::getRotation),
-                new VisionIOLimelight(camera1Name, drive::getRotation));
+                new VisionIOLimelight(camera1Name, drive::getRotation),
+                new VisionIOLimelight(camera2Name, drive::getRotation));
 
         break;
 
@@ -188,7 +190,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("IntakeIn", new IntakeIn(intake));
 
-    //  NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator));
+    NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator));
 
     NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
   }
