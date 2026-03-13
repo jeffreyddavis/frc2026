@@ -21,12 +21,11 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AutoAimOn;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
-import frc.robot.commands.Shoot;
+import frc.robot.commands.ShootAuto;
 import frc.robot.commands.StartShooter;
 import frc.robot.commands.StopShoot;
 import frc.robot.commands.WaitForShooterReady;
@@ -36,6 +35,7 @@ import frc.robot.subsystems.*;
 import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -137,10 +137,8 @@ public class RobotContainer {
         break;
     }
 
-    // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
     // Set up SysId routines
+    /*
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
@@ -155,6 +153,8 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+         */
 
     m_QuestNav = new QuestNavSub(drive);
 
@@ -177,12 +177,15 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     addNamedCommands();
+
+    // Set up auto routines
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
   }
 
   private void addNamedCommands() {
     NamedCommands.registerCommand("StartShooter", new StartShooter(shooter));
 
-    NamedCommands.registerCommand("Shoot", new Shoot(loader, spindexer));
+    NamedCommands.registerCommand("Shoot", new ShootAuto(coordinator));
 
     NamedCommands.registerCommand("StopShoot", new StopShoot(loader, spindexer));
 
@@ -217,7 +220,8 @@ public class RobotContainer {
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
 
-    agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
+    // agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
+    agitateIntake.onTrue(new StartShooter(shooter));
 
     // shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
@@ -353,6 +357,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
+  @AutoLogOutput
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }

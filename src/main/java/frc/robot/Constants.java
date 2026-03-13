@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -92,7 +93,9 @@ public final class Constants {
     public static final double maxOutput = .1;
     public static final double toleranceDeg = .1;
     public static final double OMEGA_LOOKAHEAD = .26;
-    ;
+
+
+    public static final Translation2d turretOffset = new Translation2d(-Units.inchesToMeters(3.75), Units.inchesToMeters(3.75));
   }
 
   public static final class Loader {
@@ -122,8 +125,8 @@ public final class Constants {
   public static final class Shooter {
     public static final int LeftMotor = 36;
     public static final int RightMotor = 35;
-    public static final double PassRPM = 3000.0;
-    public static final double AutoRPM = 3500.0;
+    public static final double PassRPM = 3820.0;
+    public static final double AutoRPM = 3180.0;
     public static final double RPSTolerance = 5.0;
     public static final boolean HardwareEnabled = true;
   }

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FlipUtil;
 import frc.robot.shot.ShotController;
@@ -159,7 +160,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case SHOOT:
           ShotSolution solution =
               shotController.calculate(
-                  drive.getPose().getTranslation(), drive.getFieldRelativeVelocity(), target);
+                getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
 
           if (currentMode == ShootingMode.AUTO_AIM) {
             turret.setFieldTargetAngle(
@@ -175,7 +176,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case PASS:
           ShotSolution passSolution =
               shotController.calculate(
-                  drive.getPose().getTranslation(), drive.getFieldRelativeVelocity(), target);
+                getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
           if (currentMode == ShootingMode.AUTO_AIM) {
             turret.setFieldTargetAngle(
                 passSolution.turretDegrees(),
@@ -267,6 +268,16 @@ public class ShootingCoordinator extends SubsystemBase {
     rpmTrimPercent.set(0.0);
   }
 
+  private Translation2d getTurretFieldPosition() {
+
+    Translation2d robotTranslation = drive.getPose().getTranslation();
+  
+    Translation2d turretOffsetField =
+    Constants.Turret.turretOffset.rotateBy(drive.getRotation());
+  
+    return robotTranslation.plus(turretOffsetField);
+  }
+
   /* ===================== Logging ===================== */
 
   private void logState(boolean ready, boolean feeding) {
@@ -275,5 +286,6 @@ public class ShootingCoordinator extends SubsystemBase {
     Logger.recordOutput("Coordinator/RequestShot", requestShot);
     Logger.recordOutput("Coordinator/ReadyToFire", ready);
     Logger.recordOutput("Coordinator/Feeding", feeding);
+    Logger.recordOutput("Coordinator/TurretFieldPosition", getTurretFieldPosition());
   }
 }
