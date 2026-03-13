@@ -77,8 +77,24 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber jamCurrentThreshold =
       new LoggedNetworkNumber("Intake/JamCurrent", 35);
 
+  private final LoggedNetworkNumber agitateHighAngle =
+      new LoggedNetworkNumber("Intake/AgitateHighAngle", 60);
+
+  private final LoggedNetworkNumber agitateLowAngle =
+      new LoggedNetworkNumber("Intake/AgitateLowAngle", 3);
+
+  private final LoggedNetworkNumber agitatePeriod =
+      new LoggedNetworkNumber("Intake/AgitatePeriod", 0.40); // seconds per half-cycle
+
+  private final LoggedNetworkNumber agitateMaxTime =
+      new LoggedNetworkNumber("Intake/AgitateMaxTime", 3.0); // optional cancel timer
+
   private boolean clearingJam = false;
   private double jamTimer = 0;
+  private boolean agitateContinuous = false;
+  private boolean agitateHigh = false;
+  private double agitateTimer = 0;
+  private double agitateTotalTimer = 0;
 
   private enum ClearMode {
     NONE,
@@ -86,7 +102,7 @@ public class Intake extends SubsystemBase {
     AGITATE
   }
 
-  private ClearMode clearMode = ClearMode.NONE;
+  @AutoLogOutput private ClearMode clearMode = ClearMode.NONE;
   private double clearTimer = 0;
 
   // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Intake/kP", 20);
@@ -110,6 +126,8 @@ public class Intake extends SubsystemBase {
 
   @AutoLogOutput private double armTargetDegrees = 0.0;
   private double armIntegral = 0.0;
+
+  @AutoLogOutput private double rollerRpm = 0;
 
   @AutoLogOutput private double lastError = 0.0;
 
@@ -164,11 +182,22 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  public void requestAgitate() {
-    if (clearMode == ClearMode.NONE) {
-      clearMode = ClearMode.AGITATE;
-      clearTimer = 0;
-    }
+  public void startAgitate() {
+    agitateContinuous = true;
+    agitateHigh = true;
+    agitateTimer = 0;
+    agitateTotalTimer = 0;
+    clearMode = ClearMode.AGITATE;
+  }
+
+  public void startTimedAgitate() {
+    startAgitate();
+    agitateContinuous = false;
+  }
+
+  public void stopAgitate() {
+    agitateContinuous = false;
+    clearMode = ClearMode.NONE;
   }
 
   public void reconfigureRollers() {
@@ -180,8 +209,11 @@ public class Intake extends SubsystemBase {
     SparkFlexConfig leftConfig = new SparkFlexConfig();
     SparkFlexConfig rightConfig = new SparkFlexConfig();
 
-    leftConfig.closedLoop.p(0.00021).i(0).d(0);
-    rightConfig.closedLoop.p(0.00021).i(0).d(0);
+    //  leftConfig.closedLoop.p(0.00021).i(0).d(0);
+    // rightConfig.closedLoop.p(0.00021).i(0).d(0);
+
+    leftConfig.closedLoop.p(0.00042).i(0).d(0);
+    rightConfig.closedLoop.p(0.00042).i(0).d(0);
 
     rollerLeft.configure(
         leftConfig,
@@ -229,6 +261,7 @@ public class Intake extends SubsystemBase {
     if (hardwareEnabled && closedloopControl) {
 
       double rpm = rollerLeft.getEncoder().getVelocity();
+      rollerRpm = rpm;
       double current = rollerLeft.getOutputCurrent();
 
       boolean jamDetected =
@@ -304,12 +337,24 @@ public class Intake extends SubsystemBase {
 
     } else if (clearMode == ClearMode.AGITATE) {
 
-      if (clearTimer < 0.35) {
-        moveToAngle(90); // slightly higher than normal retract
-      } else if (clearTimer < 0.75) {
-        moveToAngle(3);
+      intake();
+
+      agitateTimer += 0.02;
+      agitateTotalTimer += 0.02;
+
+      if (agitateHigh) {
+        moveToAngle(agitateHighAngle.get());
       } else {
-        intake();
+        moveToAngle(agitateLowAngle.get());
+      }
+
+      if (agitateTimer > agitatePeriod.get()) {
+        agitateHigh = !agitateHigh;
+        agitateTimer = 0;
+      }
+
+      // Optional timeout for manual button
+      if (!agitateContinuous && agitateTotalTimer > agitateMaxTime.get()) {
         clearMode = ClearMode.NONE;
       }
     }

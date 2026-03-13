@@ -97,7 +97,7 @@ public final class Constants {
 
   public static final class Loader {
     public static final int Motor = 40;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 
   public static final class Hood {

@@ -65,7 +65,7 @@ public class RobotContainer {
   private final JoystickButton retractArm = new JoystickButton(stick, 4);
 
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
-  private final JoystickButton manualLoader = new JoystickButton(stick, 8);
+  private final JoystickButton agitateIntake = new JoystickButton(stick, 8);
 
   private final POVButton hoodUp = new POVButton(stick, 0);
   private final POVButton hoodDown = new POVButton(stick, 180);
@@ -216,6 +216,9 @@ public class RobotContainer {
 
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
+
+    agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
+
     // shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
 
@@ -242,13 +245,24 @@ public class RobotContainer {
     /* ================= AUTO AIM MODE ================= */
 
     EnableAuto.onTrue(
-        new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM)));
+        new InstantCommand(
+            () -> coordinator.setMode(ShootingCoordinator.ShootingMode.DISTANCE_ONLY)));
 
     /* ================= SHOOT REQUEST ================= */
 
-    trigger.onTrue(new InstantCommand(() -> coordinator.setRequestShot(true)));
+    trigger.onTrue(
+        new InstantCommand(
+            () -> {
+              coordinator.setRequestShot(true);
+              // intake.startAgitate();
+            }));
 
-    trigger.onFalse(new InstantCommand(() -> coordinator.setRequestShot(false)));
+    trigger.onFalse(
+        new InstantCommand(
+            () -> {
+              coordinator.setRequestShot(false);
+              // intake.stopAgitate();
+            }));
 
     /* ================= INTAKE ================= */
     /*

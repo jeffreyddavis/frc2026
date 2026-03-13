@@ -15,7 +15,8 @@ public class ShootingCoordinator extends SubsystemBase {
 
   public enum ShootingMode {
     MANUAL,
-    AUTO_AIM
+    AUTO_AIM,
+    DISTANCE_ONLY
   }
 
   public enum ShotType {
@@ -152,7 +153,7 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     // Hood Targeting (AUTO_AIM only)
     // ----------------------------
-    if (currentMode == ShootingMode.AUTO_AIM) {
+    if (currentMode == ShootingMode.AUTO_AIM || currentMode == ShootingMode.DISTANCE_ONLY) {
 
       switch (currentShotType) {
         case SHOOT:
@@ -160,10 +161,12 @@ public class ShootingCoordinator extends SubsystemBase {
               shotController.calculate(
                   drive.getPose().getTranslation(), drive.getFieldRelativeVelocity(), target);
 
-          turret.setFieldTargetAngle(
-              solution.turretDegrees(),
-              drive.getRotation(),
-              Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
+          if (currentMode == ShootingMode.AUTO_AIM) {
+            turret.setFieldTargetAngle(
+                solution.turretDegrees(),
+                drive.getRotation(),
+                Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
+          }
           hood.setPositionAngle(solution.hoodDegrees());
           double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
           shooter.setTargetRPM(solution.shooterRPM() + ((trim / 100) * solution.shooterRPM()));
@@ -173,11 +176,12 @@ public class ShootingCoordinator extends SubsystemBase {
           ShotSolution passSolution =
               shotController.calculate(
                   drive.getPose().getTranslation(), drive.getFieldRelativeVelocity(), target);
-
-          turret.setFieldTargetAngle(
-              passSolution.turretDegrees(),
-              drive.getRotation(),
-              Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
+          if (currentMode == ShootingMode.AUTO_AIM) {
+            turret.setFieldTargetAngle(
+                passSolution.turretDegrees(),
+                drive.getRotation(),
+                Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
+          }
           hood.setPositionAngle(passSolution.hoodDegrees());
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
