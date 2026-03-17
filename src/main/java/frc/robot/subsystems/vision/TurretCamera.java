@@ -46,7 +46,7 @@ public class TurretCamera extends SubsystemBase {
 
   // ===================== CONSTRUCTOR =====================
 
-  public TurretCameraSubsystem(
+  public TurretCamera(
       TurretSupplier turretSupplier,
       VisionSupplier visionSupplier) {
 
