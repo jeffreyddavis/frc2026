@@ -7,7 +7,25 @@
         {
           "type": "named",
           "data": {
-            "name": "StartShooter"
+            "name": "PrepCloseShot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitforShooterReady"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]

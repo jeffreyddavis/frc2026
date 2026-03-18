@@ -43,13 +43,13 @@ public class Intake extends SubsystemBase {
   private static boolean closedloopControl = true;
 
   private SparkFlex rollerLeft;
-  private SparkFlex rollerRight;
+  // private SparkFlex rollerRight;
 
   private RelativeEncoder rollerLeftEncoder;
-  private RelativeEncoder rollerRightEncoder;
+  // private RelativeEncoder rollerRightEncoder;
 
   private SparkClosedLoopController rollerLeftPID;
-  private SparkClosedLoopController rollerRightPID;
+  // private SparkClosedLoopController rollerRightPID;
 
   /* ===================== Tunables ===================== */
 
@@ -57,7 +57,7 @@ public class Intake extends SubsystemBase {
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
 
   private final LoggedNetworkNumber intakeRPM =
-      new LoggedNetworkNumber("Intake/RollerIntakeRPM", 3000);
+      new LoggedNetworkNumber("Intake/RollerIntakeRPM", 2500);
 
   private final LoggedNetworkNumber outtakeRPM =
       new LoggedNetworkNumber("Intake/RollerOuttakeRPM", -1500);
@@ -69,7 +69,7 @@ public class Intake extends SubsystemBase {
 
   private final LoggedNetworkNumber jogPower = new LoggedNetworkNumber("Intake/jogPower", .2);
 
-  private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 4);
+  private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 3);
 
   private final LoggedNetworkNumber jamVelocityThreshold =
       new LoggedNetworkNumber("Intake/JamVelocityRPM", 300);
@@ -139,7 +139,7 @@ public class Intake extends SubsystemBase {
 
       rollerLeft = new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
 
-      rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
+      // rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
       armEncoder = new CANcoder(Constants.Intake.ArmEncoder);
       configureArmMotors();
       configureRollers();
@@ -200,10 +200,6 @@ public class Intake extends SubsystemBase {
     clearMode = ClearMode.NONE;
   }
 
-  public void reconfigureRollers() {
-    configureRollers();
-  }
-
   private void configureRollers() {
 
     SparkFlexConfig leftConfig = new SparkFlexConfig();
@@ -220,13 +216,13 @@ public class Intake extends SubsystemBase {
         SparkBase.ResetMode.kResetSafeParameters,
         SparkBase.PersistMode.kPersistParameters);
 
-    rollerRight.configure(
-        rightConfig,
-        SparkBase.ResetMode.kResetSafeParameters,
-        SparkBase.PersistMode.kPersistParameters);
+    //  rollerRight.configure(
+    //      rightConfig,
+    //      SparkBase.ResetMode.kResetSafeParameters,
+    //      SparkBase.PersistMode.kPersistParameters);
 
     rollerLeftPID = rollerLeft.getClosedLoopController();
-    rollerRightPID = rollerRight.getClosedLoopController();
+    //  rollerRightPID = rollerRight.getClosedLoopController();
   }
 
   @AutoLogOutput
@@ -442,7 +438,7 @@ public class Intake extends SubsystemBase {
 
     rollerLeftPID.setReference(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
 
-    rollerRightPID.setReference(-rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    // rollerRightPID.setReference(-rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   /* ===================== Logging ===================== */
@@ -458,7 +454,7 @@ public class Intake extends SubsystemBase {
     if (hardwareEnabled) {
       armSupplyCurrent = armLeader.getSupplyCurrent().getValueAsDouble();
       rollerLeftCurrent = rollerLeft.getOutputCurrent();
-      rollerRightCurrent = rollerRight.getOutputCurrent();
+      //   rollerRightCurrent = rollerRight.getOutputCurrent();
       armAngle = getArmDegrees();
       appliedVoltage = armLeader.getMotorVoltage().getValueAsDouble();
     }
@@ -467,7 +463,7 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/ArmSupplyCurrent", armSupplyCurrent);
     Logger.recordOutput("Intake/RollerPercent", rollerCommanded);
     Logger.recordOutput("Intake/RollerLeftCurrent", rollerLeftCurrent);
-    Logger.recordOutput("Intake/RollerRightCurrent", rollerRightCurrent);
+    // Logger.recordOutput("Intake/RollerRightCurrent", rollerRightCurrent);
     Logger.recordOutput("Intake/HardwareEnabled", hardwareEnabled);
     Logger.recordOutput("Intake/ArmDegrees", armAngle);
     Logger.recordOutput("Intake/AppliedVoltage", appliedVoltage);

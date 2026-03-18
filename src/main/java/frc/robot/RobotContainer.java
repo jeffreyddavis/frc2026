@@ -21,21 +21,12 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import frc.robot.commands.AutoAimOn;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeIn;
-import frc.robot.commands.IntakeOut;
-import frc.robot.commands.ShootAuto;
-import frc.robot.commands.StartShooter;
-import frc.robot.commands.StopShoot;
-import frc.robot.commands.WaitForShooterReady;
+import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.shot.ShotController;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -46,7 +37,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  private final Drive drive;
+  public final Drive drive;
   private final Vision vision;
   private final ShotController shotController;
 
@@ -65,7 +56,7 @@ public class RobotContainer {
   private final JoystickButton retractArm = new JoystickButton(stick, 4);
 
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
-  private final JoystickButton agitateIntake = new JoystickButton(stick, 8);
+  // private final JoystickButton agitateIntake = new JoystickButton(stick, 8);
 
   private final POVButton hoodUp = new POVButton(stick, 0);
   private final POVButton hoodDown = new POVButton(stick, 180);
@@ -76,7 +67,7 @@ public class RobotContainer {
   private final JoystickButton shooterEnable = new JoystickButton(stick, 9);
   private final JoystickButton passMode = new JoystickButton(stick, 10);
 
-  private final JoystickButton resetGyro = new JoystickButton(stick, 14);
+  private final JoystickButton resetGyro = new JoystickButton(stick, 8);
 
   private final ShootingCoordinator coordinator;
   private final Shooter shooter;
@@ -195,6 +186,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator));
 
+    NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter));
+
     NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
   }
 
@@ -205,7 +198,7 @@ public class RobotContainer {
             drive,
             () -> -stick.getRawAxis(1),
             () -> -stick.getRawAxis(0),
-            () -> -stick.getRawAxis(2)));
+            () -> -stick.getRawAxis(2) * .7));
 
     // Switch to X pattern when X button is pressed
     controller
@@ -220,8 +213,28 @@ public class RobotContainer {
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
 
+    controller
+        .pov(270)
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                  turret.jogLeft();
+                  // coordinator.trimLeft();
+                }));
+    controller
+        .pov(90)
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  // coordinator.trimRight();
+                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                  turret.jogRight();
+                },
+                turret));
+
     // agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
-    agitateIntake.onTrue(new StartShooter(shooter));
+    //  agitateIntake.onTrue(new StartShooter(shooter));
 
     // shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
@@ -242,7 +255,13 @@ public class RobotContainer {
     // Reset gyro to 0° when B button is pressed
     resetGyro.onTrue(
         Commands.runOnce(
-                () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                () -> {
+                  if (FlipUtil.shouldFlip()) {
+                    drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.k180deg));
+                  } else {
+                    drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
+                  }
+                },
                 drive)
             .ignoringDisable(true));
 
@@ -250,7 +269,11 @@ public class RobotContainer {
 
     EnableAuto.onTrue(
         new InstantCommand(
-            () -> coordinator.setMode(ShootingCoordinator.ShootingMode.DISTANCE_ONLY)));
+            () -> {
+              coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+              hood.retract();
+              shooter.setTargetRPM(0);
+            }));
 
     /* ================= SHOOT REQUEST ================= */
 
@@ -265,7 +288,7 @@ public class RobotContainer {
         new InstantCommand(
             () -> {
               coordinator.setRequestShot(false);
-              // intake.stopAgitate();
+              //  intake.stopAgitate();
             }));
 
     /* ================= INTAKE ================= */
@@ -317,32 +340,35 @@ public class RobotContainer {
     hoodUp.whileTrue(
         new RunCommand(
             () -> {
-              coordinator.setMode(ShootingMode.MANUAL);
+              // coordinator.setMode(ShootingMode.MANUAL);
               // hood.extendFully();
-              hood.incrementUp();
+              coordinator.incrementUp();
+              // hood.incrementUp();
             }));
 
     hoodDown.whileTrue(
         new RunCommand(
             () -> {
-              coordinator.setMode(ShootingMode.MANUAL);
+              // coordinator.setMode(ShootingMode.MANUAL);
               // hood.retract();
-              hood.incrementDown();
+              coordinator.incrementDown();
+              // hood.incrementDown();
             }));
 
     turretLeft.whileTrue(
         new RunCommand(
             () -> {
-              coordinator.setMode(ShootingMode.MANUAL);
-              turret.jogLeft();
-            },
-            turret));
+              // coordinator.setMode(ShootingMode.MANUAL);
+              // turret.jogLeft();
+              coordinator.trimLeft();
+            }));
 
     turretRight.whileTrue(
         new RunCommand(
             () -> {
-              coordinator.setMode(ShootingMode.MANUAL);
-              turret.jogRight();
+              coordinator.trimRight();
+              // coordinator.setMode(ShootingMode.MANUAL);
+              // turret.jogRight();
             },
             turret));
 
@@ -357,7 +383,6 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  @AutoLogOutput
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }

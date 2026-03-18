@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -15,7 +14,7 @@ public class Shooter extends SubsystemBase {
   private final boolean hardwareEnabled = Constants.Shooter.HardwareEnabled;
 
   private TalonFX leader;
-  private TalonFX follower;
+  // private TalonFX follower;
 
   // Control requests (reuse objects)
   private final VoltageOut voltageOut = new VoltageOut(0.0);
@@ -53,13 +52,13 @@ public class Shooter extends SubsystemBase {
 
     if (hardwareEnabled) {
       leader = new TalonFX(Constants.Shooter.LeftMotor);
-      follower = new TalonFX(Constants.Shooter.RightMotor);
+      // follower = new TalonFX(Constants.Shooter.RightMotor);
 
       // Basic config
       config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
       config.CurrentLimits.SupplyCurrentLimitEnable = true;
-      config.CurrentLimits.SupplyCurrentLimit = 45;
+      config.CurrentLimits.SupplyCurrentLimit = 35; // dropped from 45
 
       config.CurrentLimits.StatorCurrentLimitEnable = true;
       config.CurrentLimits.StatorCurrentLimit = 110;
@@ -73,10 +72,10 @@ public class Shooter extends SubsystemBase {
       velocityFOC.withEnableFOC(true);
 
       leader.getConfigurator().apply(config);
-      follower.getConfigurator().apply(config);
+      // follower.getConfigurator().apply(config);
 
       // Follower
-      follower.setControl(new Follower(leader.getDeviceID(), MotorAlignmentValue.Opposed));
+      // follower.setControl(new Follower(leader.getDeviceID(), MotorAlignmentValue.Opposed));
 
       // Faster status updates
       leader.getVelocity().setUpdateFrequency(100);

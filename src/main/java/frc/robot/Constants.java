@@ -90,12 +90,12 @@ public final class Constants {
 
     public static final double kP = .007;
     public static final double kS = .2;
-    public static final double maxOutput = .1;
+    public static final double maxOutput = .2;
     public static final double toleranceDeg = .1;
     public static final double OMEGA_LOOKAHEAD = .26;
 
-
-    public static final Translation2d turretOffset = new Translation2d(-Units.inchesToMeters(3.75), Units.inchesToMeters(3.75));
+    public static final Translation2d turretOffset =
+        new Translation2d(-Units.inchesToMeters(3.75), Units.inchesToMeters(3.75));
   }
 
   public static final class Loader {
