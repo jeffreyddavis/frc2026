@@ -289,7 +289,8 @@ public class ShootingCoordinator extends SubsystemBase {
 
     Translation2d robotTranslation = drive.getPose().getTranslation();
 
-    Translation2d turretOffsetField = Constants.Turret.turretOffset.rotateBy(drive.getRotation());
+    Translation2d turretOffsetField =
+        Constants.Turret.turretOffset.toTranslation2d().rotateBy(drive.getRotation());
 
     return robotTranslation.plus(turretOffsetField);
   }

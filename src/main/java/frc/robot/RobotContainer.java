@@ -13,6 +13,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -83,6 +84,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+
+    turret = new Turret();
     switch (Constants.currentMode) {
       case REAL:
         drive =
@@ -96,6 +99,8 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
+                turret,
+                drive,
                 new VisionIOLimelight(camera0Name, drive::getRotation),
                 new VisionIOLimelight(camera1Name, drive::getRotation),
                 new VisionIOLimelight(camera2Name, drive::getRotation));
@@ -112,7 +117,9 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision =
+            new Vision(
+                drive::addVisionMeasurement, turret, drive, new VisionIO() {}, new VisionIO() {});
         break;
 
       default:
@@ -124,34 +131,34 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision =
+            new Vision(
+                drive::addVisionMeasurement, turret, drive, new VisionIO() {}, new VisionIO() {});
         break;
     }
 
     // Set up SysId routines
-    /*
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-         */
+    // autoChooser.addOption(
+    //    "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    // autoChooser.addOption(
+    //    "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    //   autoChooser.addOption(
+    //       "Drive SysId (Quasistatic Forward)",
+    //       drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    //    autoChooser.addOption(
+    //       "Drive SysId (Quasistatic Reverse)",
+    //      drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    //  autoChooser.addOption(
+    //      "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    //  autoChooser.addOption(
+    ///      "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     m_QuestNav = new QuestNavSub(drive);
 
     // Instantiate subsystems
     shooter = new Shooter();
-    turret = new Turret();
+
     hood = new Hood();
     intake = new Intake();
     loader = new Loader();
@@ -171,6 +178,11 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+
+    autoChooser.addOption(
+        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption(
+        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
   }
 
   private void addNamedCommands() {
@@ -201,37 +213,40 @@ public class RobotContainer {
             () -> -stick.getRawAxis(2) * .7));
 
     // Switch to X pattern when X button is pressed
-    controller
-        .x()
-        .onTrue(Commands.runOnce(() -> intake.jogUp(), intake))
-        .onFalse(Commands.runOnce(() -> intake.stopArm()));
-    controller
-        .y()
-        .onTrue(Commands.runOnce(() -> intake.jogDown(), intake))
-        .onFalse(Commands.runOnce(() -> intake.stopArm()));
 
-    controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
-    controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
+    if (DriverStation.isJoystickConnected(1)) {
+      controller
+          .x()
+          .onTrue(Commands.runOnce(() -> intake.jogUp(), intake))
+          .onFalse(Commands.runOnce(() -> intake.stopArm()));
+      controller
+          .y()
+          .onTrue(Commands.runOnce(() -> intake.jogDown(), intake))
+          .onFalse(Commands.runOnce(() -> intake.stopArm()));
 
-    controller
-        .pov(270)
-        .whileTrue(
-            new RunCommand(
-                () -> {
-                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-                  turret.jogLeft();
-                  // coordinator.trimLeft();
-                }));
-    controller
-        .pov(90)
-        .whileTrue(
-            new RunCommand(
-                () -> {
-                  // coordinator.trimRight();
-                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-                  turret.jogRight();
-                },
-                turret));
+      controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
+      controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
+
+      controller
+          .pov(270)
+          .whileTrue(
+              new RunCommand(
+                  () -> {
+                    coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                    turret.jogLeft();
+                    // coordinator.trimLeft();
+                  }));
+      controller
+          .pov(90)
+          .whileTrue(
+              new RunCommand(
+                  () -> {
+                    // coordinator.trimRight();
+                    coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                    turret.jogRight();
+                  },
+                  turret));
+    }
 
     // agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
     //  agitateIntake.onTrue(new StartShooter(shooter));
@@ -270,9 +285,9 @@ public class RobotContainer {
     EnableAuto.onTrue(
         new InstantCommand(
             () -> {
-              coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-              hood.retract();
-              shooter.setTargetRPM(0);
+              coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM);
+              // hood.retract();
+              // shooter.setTargetRPM(0);
             }));
 
     /* ================= SHOOT REQUEST ================= */

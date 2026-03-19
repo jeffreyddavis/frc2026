@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -122,7 +123,7 @@ public class Turret extends SubsystemBase {
     double lookahead = Constants.Turret.OMEGA_LOOKAHEAD;
 
     // predict where the target will be
-    double predictedTarget = target - (robotOmegaDegPerSec * lookahead);
+    double predictedTarget = target + (robotOmegaDegPerSec * lookahead);
     // double predictedTarget = target + (lookAheadSeconds.get() * robotOmegaDegPerSec);
 
     double delta = computeSafeDelta(current, predictedTarget);
@@ -213,6 +214,10 @@ public class Turret extends SubsystemBase {
         encoder.getPosition().getValueAsDouble() * (360.0 / Constants.Turret.GEAR_RATIO));
   }
 
+  @AutoLogOutput
+  public double getTurretAngleRad() {
+    return Math.toRadians(getTurretAngleDegrees());
+  }
   /* ===================== Safety & Math ===================== */
 
   private double normalizeToSigned(double degrees) {

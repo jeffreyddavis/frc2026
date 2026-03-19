@@ -72,6 +72,15 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+    // edu.wpi.first.wpilibj.Watchdog.suppressTimeoutMessage(true);
+
+  }
+
+  @Override
+  public void robotInit() {
+    setUseTiming(false);
+
+    CommandScheduler.getInstance().onCommandInitialize(command -> {});
   }
 
   /** This function is called periodically during all modes. */
@@ -137,8 +146,14 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-    robotContainer.drive.setPose(
-        new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.kZero));
+
+    if (FlipUtil.shouldFlip()) {
+      robotContainer.drive.setPose(
+          new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.k180deg));
+    } else {
+      robotContainer.drive.setPose(
+          new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.kZero));
+    }
   }
 
   /** This function is called periodically during operator control. */
