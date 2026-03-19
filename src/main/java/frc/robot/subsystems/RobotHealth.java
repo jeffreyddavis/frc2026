@@ -127,20 +127,22 @@ public class RobotHealth extends SubsystemBase {
     Translation2d trench4 =
         FlipUtil.apply(FieldConstants.RightTrench.openingTopRight.toTranslation2d());
 
+    double robotX = pose.getX();
+
     double D = Constants.TrenchDangerDistance;
-    double HD = 0.10; // 10cm hysteresis on distance
+    double HD = 0.10; // 10cm hysteresis
 
     boolean trenchDangerEnter =
-        pose.getTranslation().getDistance(trench1) < (D - HD)
-            || pose.getTranslation().getDistance(trench2) < (D - HD)
-            || pose.getTranslation().getDistance(trench3) < (D - HD)
-            || pose.getTranslation().getDistance(trench4) < (D - HD);
+        Math.abs(robotX - trench1.getX()) < (D - HD)
+            || Math.abs(robotX - trench2.getX()) < (D - HD)
+            || Math.abs(robotX - trench3.getX()) < (D - HD)
+            || Math.abs(robotX - trench4.getX()) < (D - HD);
 
     boolean trenchDangerExit =
-        pose.getTranslation().getDistance(trench1) > (D + HD)
-            && pose.getTranslation().getDistance(trench2) > (D + HD)
-            && pose.getTranslation().getDistance(trench3) > (D + HD)
-            && pose.getTranslation().getDistance(trench4) > (D + HD);
+        Math.abs(robotX - trench1.getX()) > (D + HD)
+            && Math.abs(robotX - trench2.getX()) > (D + HD)
+            && Math.abs(robotX - trench3.getX()) > (D + HD)
+            && Math.abs(robotX - trench4.getX()) > (D + HD);
 
     hoodDangerNearTrench =
         updateWithHysteresis(hoodDangerNearTrench, trenchDangerEnter, trenchDangerExit);

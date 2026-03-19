@@ -23,7 +23,7 @@ public final class Constants {
   public static final boolean disableHAL = false;
 
   public static final double YawWarningTolerance = 2;
-  public static final double TrenchDangerDistance = 4;
+  public static final double TrenchDangerDistance = 5;
   public static final double ZONE_HYSTERESIS = 0.15; // meters (~6 in)
 
   public static final double MAX_SPEED = Units.feetToMeters(14.5);
@@ -95,7 +95,7 @@ public final class Constants {
     public static final double OMEGA_LOOKAHEAD = .2;
 
     public static final Translation3d turretOffset =
-        new Translation3d(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0);
+        new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), 0);
   }
 
   public static final class Loader {

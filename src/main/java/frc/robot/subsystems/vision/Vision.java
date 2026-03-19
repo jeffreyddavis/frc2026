@@ -103,7 +103,7 @@ public class Vision extends SubsystemBase {
     // 2. Build turret -> robot transform (WITH ROTATION)
     Transform3d turretToRobot =
         new Transform3d(
-            Constants.Turret.turretOffset, // fixed Translation3d
+            Constants.Turret.turretOffset.unaryMinus(), // reversed to go to robot
             new Rotation3d(0, 0, turretRotation.getRadians()));
 
     // 3. Camera -> turret (fixed mount offset)
