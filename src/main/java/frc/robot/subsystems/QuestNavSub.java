@@ -40,10 +40,10 @@ public class QuestNavSub extends SubsystemBase {
   // First, Declare our geometrical transform from the robot center to the Quest
   private Transform3d ROBOT_TO_QUEST =
       new Transform3d(
-          Units.inchesToMeters(10),
-          Units.inchesToMeters(1),
+          Units.inchesToMeters(11.75),
+          Units.inchesToMeters(9.75),
           Units.inchesToMeters(6.5),
-          new Rotation3d(0, 0, Units.degreesToRadians(180.0)));
+          new Rotation3d(0, 0, 0));
 
   public QuestNavSub(Drive swDrivetrain) {
     m_swerve = swDrivetrain;
@@ -60,6 +60,10 @@ public class QuestNavSub extends SubsystemBase {
     Pose3d questPose = fieldPose3d.transformBy(ROBOT_TO_QUEST);
 
     questNav.setPose(questPose);
+  }
+
+  public void commandPeriodic() {
+    questNav.commandPeriodic();
   }
 
   @Override
@@ -86,7 +90,7 @@ public class QuestNavSub extends SubsystemBase {
           // You can put some sort of filtering here if you would like!
 
           // Add the measurement to our estimator
-          m_swerve.addVisionMeasurement(robotPose.toPose2d(), timestamp, QUESTNAV_STD_DEVS);
+          //  m_swerve.addVisionMeasurement(robotPose.toPose2d(), timestamp, QUESTNAV_STD_DEVS);
         }
       }
     } else if (currentPositionStatus == PositionStatus.RECEIVING_FROM_ROBOT) {

@@ -20,13 +20,20 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
+import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -35,8 +42,10 @@ import org.littletonrobotics.junction.Logger;
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
   private final VisionIO[] io;
-  private final VisionIOInputsAutoLogged[] inputs; // change to something new
+  private final VisionIOInputs[] inputs; // change to something new
   private final Alert[] disconnectedAlerts;
+  private Turret turret;
+  private Drive drive;
 
   @AutoLogOutput public boolean isAllowedToSend = true;
 
@@ -48,14 +57,16 @@ public class Vision extends SubsystemBase {
 
   @AutoLogOutput private double lastGoodDistance = 0.0;
 
-  public Vision(VisionConsumer consumer, VisionIO... io) {
+  public Vision(VisionConsumer consumer, Turret turret, Drive drive, VisionIO... io) {
     this.consumer = consumer;
     this.io = io;
+    this.turret = turret;
+    this.drive = drive;
 
     // Initialize inputs
-    this.inputs = new VisionIOInputsAutoLogged[io.length];
+    this.inputs = new VisionIOInputs[io.length];
     for (int i = 0; i < inputs.length; i++) {
-      inputs[i] = new VisionIOInputsAutoLogged();
+      inputs[i] = new VisionIOInputs();
     }
 
     // Initialize disconnected alerts
@@ -67,6 +78,13 @@ public class Vision extends SubsystemBase {
     }
   }
 
+  @AutoLogOutput
+  private Rotation2d getTurretRotation() {
+    // Rotation2d robotHeading = drive.getRotation(); // field-relative
+    Rotation2d turretRelative = Rotation2d.fromRadians(turret.getTurretAngleRad());
+    return turretRelative;
+    // return robotHeading.plus(turretRelative);
+  }
   /**
    * Returns the X angle to the best target, which can be used for simple servoing with vision.
    *
@@ -76,6 +94,32 @@ public class Vision extends SubsystemBase {
     return inputs[cameraIndex].latestTargetObservation.tx();
   }
 
+  private Pose3d transformTurretPoseToRobot(Pose3d cameraPose) {
+
+    // 1. Get turret rotation (field-relative)
+    Rotation2d turretRotation = getTurretRotation();
+    // IMPORTANT: must be robot-relative rotation
+
+    // 2. Build turret -> robot transform (WITH ROTATION)
+    Transform3d turretToRobot =
+        new Transform3d(
+            Constants.Turret.turretOffset.unaryMinus(), // reversed to go to robot
+            new Rotation3d(0, 0, turretRotation.getRadians()));
+
+    // 3. Camera -> turret (fixed mount offset)
+    Transform3d cameraToTurret =
+        new Transform3d(
+            new Translation3d(Units.inchesToMeters(7), 0.0, 0),
+            new Rotation3d(0, Units.degreesToRadians(30), 0));
+    ;
+
+    // 4. Combine transforms
+    Transform3d cameraToRobot = cameraToTurret.plus(turretToRobot);
+
+    // 5. Apply to pose
+    return cameraPose.transformBy(cameraToRobot);
+  }
+
   @Override
   public void periodic() {
     if (!isAllowedToSend) return;
@@ -83,7 +127,7 @@ public class Vision extends SubsystemBase {
     int camerasWithPoseTemp = 0;
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+      // Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
     }
 
     // Initialize logging values
@@ -96,8 +140,7 @@ public class Vision extends SubsystemBase {
     // Loop over cameras
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
 
-      if (io[cameraIndex].getName() == "limelight-turret" && !DriverStation.isDisabled())
-        continue; // don't use turret camera when enabled
+      boolean isTurretCam = io[cameraIndex].getName().equals("limelight-turret");
 
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
@@ -118,6 +161,13 @@ public class Vision extends SubsystemBase {
 
       // Loop over pose observations
       for (var observation : inputs[cameraIndex].poseObservations) {
+
+        Pose3d pose = observation.pose();
+
+        if (isTurretCam) {
+          pose = transformTurretPoseToRobot(pose);
+        }
+
         // Check whether to reject pose
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
@@ -125,23 +175,22 @@ public class Vision extends SubsystemBase {
                     && (observation.ambiguity() > maxAmbiguity // Cannot be high ambiguity
                         || observation.averageTagDistance() > 3 // cannot be too far away with 1 tag
                     ))
-                || Math.abs(observation.pose().getZ())
-                    > maxZError // Must have realistic Z coordinate
+                || Math.abs(pose.getZ()) > maxZError // Must have realistic Z coordinate
 
                 // Must be within the field boundaries
-                || observation.pose().getX() < 0.0
-                || observation.pose().getX() > aprilTagLayout.getFieldLength()
-                || observation.pose().getY() < 0.0
-                || observation.pose().getY() > aprilTagLayout.getFieldWidth()
+                || pose.getX() < 0.0
+                || pose.getX() > aprilTagLayout.getFieldLength()
+                || pose.getY() < 0.0
+                || pose.getY() > aprilTagLayout.getFieldWidth()
                 || observation.averageTagDistance() < .5 //
             ;
 
         // Add pose to log
-        robotPoses.add(observation.pose());
+        robotPoses.add(pose);
         if (rejectPose) {
-          robotPosesRejected.add(observation.pose());
+          robotPosesRejected.add(pose);
         } else {
-          robotPosesAccepted.add(observation.pose());
+          robotPosesAccepted.add(pose);
         }
 
         // Skip if rejected
@@ -169,15 +218,15 @@ public class Vision extends SubsystemBase {
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
 
-        if (DriverStation.isDisabled()
-            || camerasWithPoseCount
-                >= 2) { // ignore when only one camera is visible (delayed one loop)
-          // Send vision observation
-          consumer.accept(
-              observation.pose().toPose2d(),
-              observation.timestamp(),
-              VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
-        }
+        //   if (DriverStation.isDisabled()
+        //       || camerasWithPoseCount
+        //          >= 2) { // ignore when only one camera is visible (delayed one loop)
+        // Send vision observation
+        consumer.accept(
+            pose.toPose2d(),
+            observation.timestamp(),
+            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+        // }
       }
 
       // Log camera datadata

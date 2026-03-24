@@ -7,7 +7,7 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -23,7 +23,7 @@ public final class Constants {
   public static final boolean disableHAL = false;
 
   public static final double YawWarningTolerance = 2;
-  public static final double TrenchDangerDistance = 2;
+  public static final double TrenchDangerDistance = 5;
   public static final double ZONE_HYSTERESIS = 0.15; // meters (~6 in)
 
   public static final double MAX_SPEED = Units.feetToMeters(14.5);
@@ -92,12 +92,13 @@ public final class Constants {
 
     public static final double kP = .007;
     public static final double kS = .2;
-    public static final double maxOutput = .1;
+    public static final double maxOutput = .3;
     public static final double toleranceDeg = .1;
-    public static final double OMEGA_LOOKAHEAD = .26;
+    public static final double OMEGA_LOOKAHEAD = .2;
 
-    public static final Translation2d turretOffset =
-        new Translation2d(-Units.inchesToMeters(3.75), Units.inchesToMeters(3.75));
+
+    public static final Translation3d turretOffset =
+        new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), 0);
   }
 
   public static final class Loader {
@@ -130,6 +131,6 @@ public final class Constants {
     public static final double PassRPM = 3820.0;
     public static final double AutoRPM = 3180.0;
     public static final double RPSTolerance = 5.0;
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
   }
 }

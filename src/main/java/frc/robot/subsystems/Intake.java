@@ -42,10 +42,10 @@ public class Intake extends SubsystemBase {
   // private SparkFlex rollerRight;
 
   private RelativeEncoder rollerLeftEncoder;
-  private RelativeEncoder rollerRightEncoder;
+  // private RelativeEncoder rollerRightEncoder;
 
   private SparkClosedLoopController rollerLeftPID;
-  private SparkClosedLoopController rollerRightPID;
+  // private SparkClosedLoopController rollerRightPID;
 
   /* ===================== Tunables ===================== */
 
@@ -53,7 +53,7 @@ public class Intake extends SubsystemBase {
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
 
   private final LoggedNetworkNumber intakeRPM =
-      new LoggedNetworkNumber("Intake/RollerIntakeRPM", 3000);
+      new LoggedNetworkNumber("Intake/RollerIntakeRPM", 2500);
 
   private final LoggedNetworkNumber outtakeRPM =
       new LoggedNetworkNumber("Intake/RollerOuttakeRPM", -1500);
@@ -65,7 +65,7 @@ public class Intake extends SubsystemBase {
 
   private final LoggedNetworkNumber jogPower = new LoggedNetworkNumber("Intake/jogPower", .2);
 
-  private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 4);
+  private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 3);
 
   private final LoggedNetworkNumber jamVelocityThreshold =
       new LoggedNetworkNumber("Intake/JamVelocityRPM", 300);
@@ -194,10 +194,6 @@ public class Intake extends SubsystemBase {
   public void stopAgitate() {
     agitateContinuous = false;
     clearMode = ClearMode.NONE;
-  }
-
-  public void reconfigureRollers() {
-    configureRollers();
   }
 
   private void configureRollers() {
@@ -443,6 +439,7 @@ public class Intake extends SubsystemBase {
     double rps = rpm / 60.0;
 
     rollerLeft.setControl(rollerVelocityRequest.withVelocity(rps));
+
   }
 
   /* ===================== Logging ===================== */
@@ -468,7 +465,7 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/ArmSupplyCurrent", armSupplyCurrent);
     Logger.recordOutput("Intake/RollerPercent", rollerCommanded);
     Logger.recordOutput("Intake/RollerLeftCurrent", rollerLeftCurrent);
-    Logger.recordOutput("Intake/RollerRightCurrent", rollerRightCurrent);
+    // Logger.recordOutput("Intake/RollerRightCurrent", rollerRightCurrent);
     Logger.recordOutput("Intake/HardwareEnabled", hardwareEnabled);
     Logger.recordOutput("Intake/ArmDegrees", armAngle);
     Logger.recordOutput("Intake/AppliedVoltage", appliedVoltage);

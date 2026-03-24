@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface VisionIO {
+
   @AutoLog
   public static class VisionIOInputs {
     public boolean connected = false;
@@ -19,6 +20,21 @@ public interface VisionIO {
         new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
     public PoseObservation[] poseObservations = new PoseObservation[0];
     public int[] tagIds = new int[0];
+  }
+
+  public static class TurretTargetObservation {
+    public final int tagId;
+    public final Rotation2d tx;
+    public final Rotation2d ty;
+    public final double distanceMeters;
+
+    public TurretTargetObservation(int tagId, Rotation2d tx, Rotation2d ty, double distanceMeters) {
+
+      this.tagId = tagId;
+      this.tx = tx;
+      this.ty = ty;
+      this.distanceMeters = distanceMeters;
+    }
   }
 
   /** Represents the angle to a simple target, not used for pose estimation. */

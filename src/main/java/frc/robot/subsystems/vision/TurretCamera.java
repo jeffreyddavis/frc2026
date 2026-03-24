@@ -2,14 +2,17 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.littletonrobotics.junction.Logger;
 
 /**
- * TurretCameraSubsystem
+ * TurretCamera
  *
  * <p>Self-contained vision system for: - turret-relative yaw aiming - distance-to-hub calculation
  * using AprilTags
@@ -28,9 +31,9 @@ public class TurretCamera extends SubsystemBase {
 
   private final AprilTagFieldLayout layout = AprilTagLayoutType.OFFICIAL.getLayout();
 
-  // You must provide this
   private final TurretSupplier turretSupplier;
   private final VisionSupplier visionSupplier;
+  private final RobotRotationSupplier robotRotationSupplier;
 
   // ===================== STATE =====================
 
@@ -44,10 +47,14 @@ public class TurretCamera extends SubsystemBase {
 
   // ===================== CONSTRUCTOR =====================
 
-  public TurretCamera(TurretSupplier turretSupplier, VisionSupplier visionSupplier) {
+  public TurretCamera(
+      TurretSupplier turretSupplier,
+      VisionSupplier visionSupplier,
+      RobotRotationSupplier robotRotationSupplier) {
 
     this.turretSupplier = turretSupplier;
     this.visionSupplier = visionSupplier;
+    this.robotRotationSupplier = robotRotationSupplier;
   }
 
   // ===================== PERIODIC =====================
@@ -55,11 +62,29 @@ public class TurretCamera extends SubsystemBase {
   @Override
   public void periodic() {
     var targets = visionSupplier.getTargets();
+    Logger.recordOutput("TurretCamera/TargetCount", targets.size());
 
     if (targets.isEmpty()) {
       resetState();
       return;
     }
+
+    int index = 0;
+    for (var target : targets) {
+
+      Logger.recordOutput("TurretCamera/Targets/" + index + "/TagID", target.getFiducialId());
+      Logger.recordOutput("TurretCamera/Targets/" + index + "/YawDeg", target.getYaw());
+
+      Transform3d t = target.getBestCameraToTarget();
+      Logger.recordOutput("TurretCamera/Targets/" + index + "/CamToTagX", t.getX());
+      Logger.recordOutput("TurretCamera/Targets/" + index + "/CamToTagY", t.getY());
+      Logger.recordOutput("TurretCamera/Targets/" + index + "/CamToTagZ", t.getZ());
+
+      index++;
+    }
+
+    double turretAngle = turretSupplier.getTurretAngleRad();
+    Logger.recordOutput("TurretCamera/TurretAngleDeg", Math.toDegrees(turretAngle));
 
     List<Double> distances = new ArrayList<>();
     double bestYaw = 0.0;
@@ -73,14 +98,27 @@ public class TurretCamera extends SubsystemBase {
 
       Pose3d tagPose = tagPoseOpt.get();
       Transform3d cameraToTag = target.getBestCameraToTarget();
+      cameraToTag =
+          new Transform3d(
+              new Translation3d(-cameraToTag.getX(), -cameraToTag.getY(), cameraToTag.getZ()),
+              cameraToTag.getRotation());
 
       // ===================== STEP 1: camera pose =====================
-      Pose3d cameraPose = tagPose.transformBy(cameraToTag.inverse());
+      Pose3d cameraPose =
+          new Pose3d(
+              tagPose.getTranslation().minus(cameraToTag.getTranslation()),
+              new Rotation3d() // we will fix rotation separately
+              );
 
       // ===================== STEP 2: robot pose =====================
       Transform3d robotToCamera = getRobotToCameraTransform(turretSupplier.getTurretAngleRad());
 
-      Pose3d robotPose = cameraPose.transformBy(robotToCamera.inverse());
+      Rotation2d robotRotation = robotRotationSupplier.getRobotRotation();
+      Pose3d robotPose =
+          new Pose3d(
+              cameraPose.getTranslation().minus(robotToCamera.getTranslation()),
+              new Rotation3d(0, 0, robotRotation.getRadians()));
+      Logger.recordOutput("TurretCamera/ComputedRobotPose", robotPose.toPose2d());
 
       // ===================== STEP 3: distance =====================
       Translation2d robotXY = robotPose.getTranslation().toTranslation2d();
@@ -126,6 +164,13 @@ public class TurretCamera extends SubsystemBase {
     }
 
     isStable = stableFrameCount >= REQUIRED_STABLE_FRAMES;
+
+    Logger.recordOutput("TurretCamera/HasTarget", hasTarget);
+    Logger.recordOutput("TurretCamera/YawErrorRad", yawErrorRad);
+    Logger.recordOutput("TurretCamera/YawErrorDeg", Math.toDegrees(yawErrorRad));
+    Logger.recordOutput("TurretCamera/DistanceMeters", distanceMeters);
+    Logger.recordOutput("TurretCamera/IsStable", isStable);
+    Logger.recordOutput("TurretCamera/StableFrameCount", stableFrameCount);
   }
 
   // ===================== TRANSFORMS =====================
@@ -133,15 +178,21 @@ public class TurretCamera extends SubsystemBase {
   /** Computes robot -> camera transform based on turret rotation. */
   private Transform3d getRobotToCameraTransform(double turretAngleRad) {
 
-    // TODO: Replace these with your real constants
-    Transform3d robotToTurret = new Transform3d(new Translation3d(0.0, 0.0, 0.0), new Rotation3d());
+    Transform3d robotToTurret =
+        new Transform3d(
+            new Translation3d(
+                Constants.Turret.turretOffset.getX(), Constants.Turret.turretOffset.getY(), 0.0),
+            new Rotation3d());
 
     Transform3d turretToCamera =
         new Transform3d(
-            new Translation3d(0.2, 0.0, 0.3), // example
-            new Rotation3d());
+            new Translation3d(Units.inchesToMeters(7), 0.0, 0), new Rotation3d(0, 30, 0));
 
-    Rotation3d turretRotation = new Rotation3d(0, 0, turretAngleRad);
+    Rotation3d turretRotation =
+        new Rotation3d(
+            Constants.Turret.turretOffset.getX(),
+            Constants.Turret.turretOffset.getY(),
+            turretAngleRad);
 
     Transform3d rotatedTurretToCamera =
         new Transform3d(
@@ -206,5 +257,36 @@ public class TurretCamera extends SubsystemBase {
     Transform3d getBestCameraToTarget();
 
     double getYaw(); // degrees
+  }
+
+  public static class SimpleVisionTarget implements VisionTarget {
+    private final int id;
+    private final Transform3d transform;
+    private final double yawDeg;
+
+    public SimpleVisionTarget(int id, Transform3d transform, double yawDeg) {
+      this.id = id;
+      this.transform = transform;
+      this.yawDeg = yawDeg;
+    }
+
+    @Override
+    public int getFiducialId() {
+      return id;
+    }
+
+    @Override
+    public Transform3d getBestCameraToTarget() {
+      return transform;
+    }
+
+    @Override
+    public double getYaw() {
+      return yawDeg;
+    }
+  }
+
+  public interface RobotRotationSupplier {
+    Rotation2d getRobotRotation();
   }
 }

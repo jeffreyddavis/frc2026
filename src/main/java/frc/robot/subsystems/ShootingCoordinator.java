@@ -10,7 +10,6 @@ import frc.robot.shot.ShotSolution;
 import frc.robot.subsystems.drive.Drive;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class ShootingCoordinator extends SubsystemBase {
 
@@ -61,8 +60,8 @@ public class ShootingCoordinator extends SubsystemBase {
 
   @AutoLogOutput private boolean trenchBlocked = false;
 
-  private final LoggedNetworkNumber rpmTrimPercent =
-      new LoggedNetworkNumber("Shooting/rpmTrimPercent", 0.0);
+  @AutoLogOutput private double hoodTrim = 0;
+  @AutoLogOutput private double shotTrim = 0.0;
 
   public ShootingCoordinator(
       Shooter shooter,
@@ -91,6 +90,22 @@ public class ShootingCoordinator extends SubsystemBase {
 
   public void setRequestShot(boolean request) {
     requestShot = request;
+  }
+
+  public void incrementUp() {
+    hoodTrim += 0.5;
+  }
+
+  public void incrementDown() {
+    hoodTrim -= 0.5;
+  }
+
+  public void trimLeft() {
+    shotTrim += 0.5;
+  }
+
+  public void trimRight() {
+    shotTrim -= 0.5;
   }
 
   /* ===================== CORE LOGIC ===================== */
@@ -122,8 +137,9 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     // HARD trench protection
     // ----------------------------
-    trenchBlocked =
-        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
+    trenchBlocked = robotHealth.hoodDangerNearTrench && !trenchOverrideEnabled;
+
+    if (trenchBlocked) hood.retract();
     /*
        if (trenchBlocked) {
          hood.setPositionMm(0);
@@ -164,13 +180,13 @@ public class ShootingCoordinator extends SubsystemBase {
 
           if (currentMode == ShootingMode.AUTO_AIM) {
             turret.setFieldTargetAngle(
-                solution.turretDegrees(),
+                solution.turretDegrees() + shotTrim,
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          hood.setPositionAngle(solution.hoodDegrees());
-          double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
-          shooter.setTargetRPM(solution.shooterRPM() + ((trim / 100) * solution.shooterRPM()));
+          hood.setPositionAngle(solution.hoodDegrees() + hoodTrim);
+          // double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
+          shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) * solution.shooterRPM()));
           break;
 
         case PASS:
@@ -179,11 +195,11 @@ public class ShootingCoordinator extends SubsystemBase {
                   getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
           if (currentMode == ShootingMode.AUTO_AIM) {
             turret.setFieldTargetAngle(
-                passSolution.turretDegrees(),
+                passSolution.turretDegrees() + shotTrim,
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          hood.setPositionAngle(passSolution.hoodDegrees());
+          hood.setPositionAngle(passSolution.hoodDegrees() + hoodTrim);
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
@@ -245,9 +261,9 @@ public class ShootingCoordinator extends SubsystemBase {
     boolean trenchBlocked =
         (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
 
-    if (trenchBlocked) {
-      return ShotType.BLOCKED;
-    }
+    // if (trenchBlocked) {
+    //  return ShotType.BLOCKED;
+    // }
 
     // if (!robotHealth.fieldReady) {
     //  return ShotType.NONE;
@@ -265,14 +281,16 @@ public class ShootingCoordinator extends SubsystemBase {
   }
 
   public void resetTrim() {
-    rpmTrimPercent.set(0.0);
+    // rpmTrimPercent.set(0.0);
+    hoodTrim = 0;
   }
 
   private Translation2d getTurretFieldPosition() {
 
     Translation2d robotTranslation = drive.getPose().getTranslation();
 
-    Translation2d turretOffsetField = Constants.Turret.turretOffset.rotateBy(drive.getRotation());
+    Translation2d turretOffsetField = // new Translation2d().rotateBy(drive.getRotation());
+        Constants.Turret.turretOffset.div(1.5).toTranslation2d().rotateBy(drive.getRotation());
 
     return robotTranslation.plus(turretOffsetField);
   }

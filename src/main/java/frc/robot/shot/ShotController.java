@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -61,11 +60,16 @@ public class ShotController {
   public ShotController() {
 
     // Use helper method so bounds auto-update
-    addShotPoint(Units.inchesToMeters(44), new ShotParams(0, 3180.0, 1.2));
-    addShotPoint(Units.inchesToMeters(73), new ShotParams(37, 3600.0, 1.25));
-    addShotPoint(Units.inchesToMeters(100), new ShotParams(40, 3820, 1.3));
-    addShotPoint(Units.inchesToMeters(146), new ShotParams(48, 3820, 1.3));
-    addShotPoint(Units.inchesToMeters(184), new ShotParams(56, 3820, 1.3));
+    addShotPoint(1.962, new ShotParams(40, 3660.0, 1.2));
+    addShotPoint(1.854, new ShotParams(40.467, 3634.0, 1.25));
+    addShotPoint(2.043, new ShotParams(41, 3634, 1.3));
+    addShotPoint(2.458, new ShotParams(43.2, 3820, 1.3));
+    addShotPoint(3.171, new ShotParams(45.04, 3820, 1.3));
+    addShotPoint(3.842, new ShotParams(52.907, 3820, 1.3));
+    addShotPoint(4.569, new ShotParams(62.2, 3820, 1.3));
+    addShotPoint(4.773, new ShotParams(64.2, 3820, 1.3));
+    addShotPoint(5.112, new ShotParams(58.2, 4320, 1.4));
+    addShotPoint(5.463, new ShotParams(60.2, 4641, 1.4));
   }
 
   private void addShotPoint(double distance, ShotParams params) {
