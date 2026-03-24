@@ -3,29 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.8076249999998275,
-        "y": 5.800410714281187
+        "x": 3.589232142857143,
+        "y": 7.549624999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.309714285714113,
-        "y": 6.820785714281186
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 4.609607142857143,
-        "y": 7.468642857142857
-      },
-      "prevControl": {
-        "x": 3.2653035714285714,
-        "y": 7.6144107142857145
-      },
-      "nextControl": {
-        "x": 5.785166514040844,
-        "y": 7.341172563881973
+        "x": 5.872928571428572,
+        "y": 7.274285714285713
       },
       "isLocked": false,
       "linkedName": null
@@ -36,20 +20,15 @@
         "y": 4.472303571428571
       },
       "prevControl": {
-        "x": 7.46017857142857,
-        "y": 6.189125000000001
+        "x": 7.735517857142856,
+        "y": 6.577839285714285
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.9973614775725577,
-      "rotationDegrees": 0.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
@@ -67,7 +46,7 @@
     },
     {
       "name": "reload_field",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.3,
       "endWaypointRelativePos": null,
       "command": null
     }

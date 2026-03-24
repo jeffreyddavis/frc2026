@@ -75,6 +75,10 @@ public class Spindexer extends SubsystemBase {
 
   /* ===================== Public Control ===================== */
 
+  public void setFeedPercent(double percent) {
+    feedPercent.set(percent);
+  }
+
   public void feed() {
     running = true;
     commandedPercent = feedPercent.get();

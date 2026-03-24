@@ -13,7 +13,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -59,6 +58,7 @@ public class RobotContainer {
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
   private final JoystickButton agitateIntake = new JoystickButton(stick, 14);
 
+  private final JoystickButton resetTurret = new JoystickButton(stick, 11);
 
   private final POVButton hoodUp = new POVButton(stick, 0);
   private final POVButton hoodDown = new POVButton(stick, 180);
@@ -197,11 +197,14 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("IntakeIn", new IntakeIn(intake));
 
-    NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator));
+    NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator, spindexer));
 
-    NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter));
+    NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter, spindexer));
 
     NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
+
+    NamedCommands.registerCommand(
+        "ExpandAtMatchStart", new ExpandAtMatchStart(intake, hood, turret));
   }
 
   private void configureButtonBindings() {
@@ -215,39 +218,39 @@ public class RobotContainer {
 
     // Switch to X pattern when X button is pressed
 
-    if (DriverStation.isJoystickConnected(1)) {
-      controller
-          .x()
-          .onTrue(Commands.runOnce(() -> intake.jogUp(), intake))
-          .onFalse(Commands.runOnce(() -> intake.stopArm()));
-      controller
-          .y()
-          .onTrue(Commands.runOnce(() -> intake.jogDown(), intake))
-          .onFalse(Commands.runOnce(() -> intake.stopArm()));
+    controller
+        .x()
+        .onTrue(Commands.runOnce(() -> intake.jogUp(), intake))
+        .onFalse(Commands.runOnce(() -> intake.stopArm()));
+    controller
+        .y()
+        .onTrue(Commands.runOnce(() -> intake.jogDown(), intake))
+        .onFalse(Commands.runOnce(() -> intake.stopArm()));
 
-      controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
-      controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
+    controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
+    controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
 
-      controller
-          .pov(270)
-          .whileTrue(
-              new RunCommand(
-                  () -> {
-                    coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-                    turret.jogLeft();
-                    // coordinator.trimLeft();
-                  }));
-      controller
-          .pov(90)
-          .whileTrue(
-              new RunCommand(
-                  () -> {
-                    // coordinator.trimRight();
-                    coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-                    turret.jogRight();
-                  },
-                  turret));
-    }
+    controller.rightTrigger().onTrue(new ReadyMatchPosition(intake, hood, turret));
+    controller.leftTrigger().onTrue(new ExpandAtMatchStart(intake, hood, turret));
+    controller
+        .pov(270)
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                  turret.jogLeft();
+                  // coordinator.trimLeft();
+                }));
+    controller
+        .pov(90)
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  // coordinator.trimRight();
+                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                  turret.jogRight();
+                },
+                turret));
 
     agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
     // resetGyro.onTrue(new StartShooter(shooter));
@@ -281,12 +284,22 @@ public class RobotContainer {
                 drive)
             .ignoringDisable(true));
 
+    resetTurret.onTrue(
+        Commands.runOnce(
+                () -> {
+                  turret.zeroTurret();
+                  turret.setTurretRelativeAngle(0);
+                },
+                turret)
+            .ignoringDisable(true));
+
     /* ================= AUTO AIM MODE ================= */
 
     EnableAuto.onTrue(
         new InstantCommand(
             () -> {
               coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM);
+              spindexer.setFeedPercent(.5);
               // hood.retract();
               // shooter.setTargetRPM(0);
             }));

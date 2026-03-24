@@ -42,13 +42,19 @@
           }
         },
         {
-          "type": "sequential",
+          "type": "parallel",
           "data": {
             "commands": [
               {
+                "type": "path",
+                "data": {
+                  "pathName": "Move Over Barge"
+                }
+              },
+              {
                 "type": "named",
                 "data": {
-                  "name": "IntakeIn"
+                  "name": "IntakeBarge"
                 }
               },
               {

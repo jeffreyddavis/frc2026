@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.41,
-        "y": 2.533
+        "x": 3.609027777780687,
+        "y": 0.6022569444486146
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5850535714285714,
-        "y": 1.1682321428571425
+        "x": 5.593090277780687,
+        "y": 0.63375000000417
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.063107142857142,
-        "y": 0.6175535714285718
+        "x": 6.648107638891798,
+        "y": 2.019444444448615
       },
       "prevControl": {
-        "x": 3.778785714285713,
-        "y": 0.7073701298701305
+        "x": 5.326688420941077,
+        "y": 0.5680495657158573
       },
       "nextControl": {
-        "x": 6.094420481575458,
-        "y": 0.5454306490059619
+        "x": 7.608645833336242,
+        "y": 3.074461805559725
       },
       "isLocked": false,
       "linkedName": null
@@ -33,23 +33,18 @@
     {
       "anchor": {
         "x": 8.172821428571428,
-        "y": 3.630089285714286
+        "y": 3.8617881944486143
       },
       "prevControl": {
-        "x": 6.569375,
-        "y": 1.5569464285714285
+        "x": 7.419687500002909,
+        "y": 2.7910243055597252
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.9973614775725582,
-      "rotationDegrees": 0.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
@@ -67,7 +62,7 @@
     },
     {
       "name": "reload_field",
-      "waypointRelativePos": 0.1,
+      "waypointRelativePos": 0.05,
       "endWaypointRelativePos": null,
       "command": null
     }

@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Turret extends SubsystemBase {
 
@@ -24,11 +23,10 @@ public class Turret extends SubsystemBase {
 
   /* ===================== Tunables ===================== */
 
-  private final LoggedNetworkNumber targetAngleDeg =
-      new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
+  // private final LoggedNetworkNumber targetAngleDeg =
+  //  new LoggedNetworkNumber("Turret/TargetDeg", 0.0);
 
-  private final LoggedNetworkNumber lookAheadSeconds =
-      new LoggedNetworkNumber("Turret/lookAheadSeconds", 0.0);
+  private double targetAngleDeg = 0.0;
 
   // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Turret/kP", 0.00002);
 
@@ -53,8 +51,13 @@ public class Turret extends SubsystemBase {
 
       configureMotor();
       configureEncoder();
-      zeroTurret(); // Use boot position as zero
+      setTurretEncoderToStart();
     }
+  }
+
+  public void setTurretEncoderToStart() {
+    encoder.setPosition(Constants.Turret.startPositionEncoderOffset); // rotations = 0 at boot
+    targetAngleDeg = Constants.Turret.startingDegrees;
   }
 
   private void configureMotor() {
@@ -106,7 +109,7 @@ public class Turret extends SubsystemBase {
     if (!hardwareEnabled) return false;
 
     double current = getTurretAngleDegrees();
-    double target = targetAngleDeg.get();
+    double target = targetAngleDeg;
     return Math.abs(current - target) < Constants.Turret.toleranceDeg; // toleranceDeg.get();
   }
 
@@ -117,14 +120,13 @@ public class Turret extends SubsystemBase {
 
     double current = hardwareEnabled ? getTurretAngleDegrees() : 0.0;
 
-    double target = targetAngleDeg.get();
+    double target = targetAngleDeg;
 
     // prediction horizon (seconds)
     double lookahead = Constants.Turret.OMEGA_LOOKAHEAD;
 
     // predict where the target will be
     double predictedTarget = target + (robotOmegaDegPerSec * lookahead);
-    // double predictedTarget = target + (lookAheadSeconds.get() * robotOmegaDegPerSec);
 
     double delta = computeSafeDelta(current, predictedTarget);
 
@@ -185,8 +187,13 @@ public class Turret extends SubsystemBase {
     // Normalize to signed range
     turretRelativeTarget = normalizeToSigned(turretRelativeTarget);
 
-    targetAngleDeg.set(turretRelativeTarget);
+    targetAngleDeg = turretRelativeTarget;
 
+    closedLoop = true;
+  }
+
+  public void setTurretRelativeAngle(double angle) {
+    targetAngleDeg = angle;
     closedLoop = true;
   }
 
@@ -194,12 +201,12 @@ public class Turret extends SubsystemBase {
 
   public void jogLeft() {
     // setPercentOutput(.1);
-    targetAngleDeg.set(targetAngleDeg.get() - 1);
+    targetAngleDeg = (targetAngleDeg - 1);
   }
 
   public void jogRight() {
     // setPercentOutput(-.1);
-    targetAngleDeg.set(targetAngleDeg.get() + 1);
+    targetAngleDeg = (targetAngleDeg + 1);
   }
 
   public void stop() {
@@ -207,6 +214,11 @@ public class Turret extends SubsystemBase {
   }
 
   /* ===================== Encoder ===================== */
+
+  @AutoLogOutput
+  public double getRawEncoderPosition() {
+    return encoder.getPosition().getValueAsDouble();
+  }
 
   public double getTurretAngleDegrees() {
     if (!hardwareEnabled) return 0.0;

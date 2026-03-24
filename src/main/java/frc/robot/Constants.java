@@ -84,9 +84,10 @@ public final class Constants {
     public static final double FORBIDDEN_BUFFER_DEG = 5.0; // safety margin
 
     public static final double startingDegrees = 28;
+    public static final double startPositionEncoderOffset = 0.778;
 
     public static final double TURRET_MAX_DEG = 135;
-    public static final double TURRET_MIN_DEG = -15;
+    public static final double TURRET_MIN_DEG = -28;
     public static final double GEAR_RATIO = 10.0; // example
     public static final boolean HardwareEnabled = true;
 
@@ -95,7 +96,6 @@ public final class Constants {
     public static final double maxOutput = .3;
     public static final double toleranceDeg = .1;
     public static final double OMEGA_LOOKAHEAD = .2;
-
 
     public static final Translation3d turretOffset =
         new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), 0);
@@ -123,6 +123,12 @@ public final class Constants {
     public static final int RollerLeft = 53;
     public static final int RollerRight = 54;
     public static final boolean HardwareEnabled = true;
+
+    public static final double deployAngle = -3;
+    public static final double retractAngle = 110;
+    public static final double readyAngle = 125;
+    public static final double safeAngle = 100;
+    public static final double armTolerance = 2;
   }
 
   public static final class Shooter {

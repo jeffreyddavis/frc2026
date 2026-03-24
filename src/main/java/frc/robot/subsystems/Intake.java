@@ -34,7 +34,7 @@ public class Intake extends SubsystemBase {
   private final VoltageOut armVoltage = new VoltageOut(0.0);
 
   private static final double ARM_MIN = 0;
-  private static final double ARM_MAX = 120;
+  private static final double ARM_MAX = 125;
 
   private static boolean closedloopControl = true;
 
@@ -48,6 +48,7 @@ public class Intake extends SubsystemBase {
   // private SparkClosedLoopController rollerRightPID;
 
   /* ===================== Tunables ===================== */
+  private boolean isAtAngle = false;
 
   private final LoggedNetworkNumber armCurrentLimit =
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
@@ -102,7 +103,7 @@ public class Intake extends SubsystemBase {
   private double clearTimer = 0;
 
   // private final LoggedNetworkNumber kP = new LoggedNetworkNumber("Intake/kP", 20);
-  private final double kP = .7;
+  private final double kP = .65;
 
   // private final LoggedNetworkNumber kI = new LoggedNetworkNumber("Intake/kI", .1);
   private final double kI = 0;
@@ -368,13 +369,25 @@ public class Intake extends SubsystemBase {
   // Arm
 
   public void deploy() {
-    moveToAngle(-3);
+    moveToAngle(Constants.Intake.deployAngle);
     intake();
   }
 
   public void retract() {
-    moveToAngle(110);
+    moveToAngle(Constants.Intake.retractAngle);
     stopRollers();
+  }
+
+  public boolean isAtAngle() {
+    return isAtAngle;
+  }
+
+  public void safeAngle() {
+    moveToAngle(Constants.Intake.safeAngle);
+  }
+
+  public void readyAngle() {
+    moveToAngle(Constants.Intake.readyAngle);
   }
 
   public void goToArbitrayAngle() {
@@ -439,7 +452,6 @@ public class Intake extends SubsystemBase {
     double rps = rpm / 60.0;
 
     rollerLeft.setControl(rollerVelocityRequest.withVelocity(rps));
-
   }
 
   /* ===================== Logging ===================== */
@@ -459,6 +471,8 @@ public class Intake extends SubsystemBase {
       // rollerRightCurrent = rollerRight.getOutputCurrent();
       armAngle = getArmDegrees();
       appliedVoltage = armLeader.getMotorVoltage().getValueAsDouble();
+
+      isAtAngle = (Math.abs(armAngle - armTargetDegrees) < Constants.Intake.armTolerance);
     }
 
     Logger.recordOutput("Intake/ArmPercent", armCommanded);
