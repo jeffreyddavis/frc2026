@@ -160,7 +160,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case SHOOT:
           ShotSolution solution =
               shotController.calculate(
-                getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
+                  getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
 
           if (currentMode == ShootingMode.AUTO_AIM) {
             turret.setFieldTargetAngle(
@@ -176,7 +176,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case PASS:
           ShotSolution passSolution =
               shotController.calculate(
-                getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
+                  getTurretFieldPosition(), drive.getFieldRelativeVelocity(), target);
           if (currentMode == ShootingMode.AUTO_AIM) {
             turret.setFieldTargetAngle(
                 passSolution.turretDegrees(),
@@ -271,10 +271,9 @@ public class ShootingCoordinator extends SubsystemBase {
   private Translation2d getTurretFieldPosition() {
 
     Translation2d robotTranslation = drive.getPose().getTranslation();
-  
-    Translation2d turretOffsetField =
-    Constants.Turret.turretOffset.rotateBy(drive.getRotation());
-  
+
+    Translation2d turretOffsetField = Constants.Turret.turretOffset.rotateBy(drive.getRotation());
+
     return robotTranslation.plus(turretOffsetField);
   }
 

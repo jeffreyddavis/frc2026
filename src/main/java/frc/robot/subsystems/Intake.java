@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -12,12 +13,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -38,12 +34,12 @@ public class Intake extends SubsystemBase {
   private final VoltageOut armVoltage = new VoltageOut(0.0);
 
   private static final double ARM_MIN = 0;
-  private static final double ARM_MAX = 100;
+  private static final double ARM_MAX = 120;
 
   private static boolean closedloopControl = true;
 
-  private SparkFlex rollerLeft;
-  private SparkFlex rollerRight;
+  private TalonFX rollerLeft;
+  // private SparkFlex rollerRight;
 
   private RelativeEncoder rollerLeftEncoder;
   private RelativeEncoder rollerRightEncoder;
@@ -137,9 +133,9 @@ public class Intake extends SubsystemBase {
       armLeader = new TalonFX(Constants.Intake.ArmLeader);
       armFollower = new TalonFX(Constants.Intake.ArmFollower);
 
-      rollerLeft = new SparkFlex(Constants.Intake.RollerLeft, SparkFlex.MotorType.kBrushless);
+      rollerLeft = new TalonFX(Constants.Intake.RollerLeft);
 
-      rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
+      // rollerRight = new SparkFlex(Constants.Intake.RollerRight, SparkFlex.MotorType.kBrushless);
       armEncoder = new CANcoder(Constants.Intake.ArmEncoder);
       configureArmMotors();
       configureRollers();
@@ -206,27 +202,25 @@ public class Intake extends SubsystemBase {
 
   private void configureRollers() {
 
-    SparkFlexConfig leftConfig = new SparkFlexConfig();
-    SparkFlexConfig rightConfig = new SparkFlexConfig();
+    TalonFXConfiguration leftConfig = new TalonFXConfiguration();
+    // TalonFXConfiguration rightConfig = new TalonFXConfiguration();
 
-    //  leftConfig.closedLoop.p(0.00021).i(0).d(0);
-    // rightConfig.closedLoop.p(0.00021).i(0).d(0);
+    // PID (Slot0 is default)
+    leftConfig.Slot0.kP = 0.42;
+    leftConfig.Slot0.kI = 0.0;
+    leftConfig.Slot0.kD = 0.0;
 
-    leftConfig.closedLoop.p(0.00042).i(0).d(0);
-    rightConfig.closedLoop.p(0.00042).i(0).d(0);
+    // rightConfig.Slot0.kP = 0.00042;
+    // rightConfig.Slot0.kI = 0.0;
+    // rightConfig.Slot0.kD = 0.0;
 
-    rollerLeft.configure(
-        leftConfig,
-        SparkBase.ResetMode.kResetSafeParameters,
-        SparkBase.PersistMode.kPersistParameters);
+    // Optional but recommended: set neutral mode
+    leftConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    // rightConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    rollerRight.configure(
-        rightConfig,
-        SparkBase.ResetMode.kResetSafeParameters,
-        SparkBase.PersistMode.kPersistParameters);
-
-    rollerLeftPID = rollerLeft.getClosedLoopController();
-    rollerRightPID = rollerRight.getClosedLoopController();
+    // Apply configs
+    rollerLeft.getConfigurator().apply(leftConfig);
+    // rollerRight.getConfigurator().apply(rightConfig);
   }
 
   @AutoLogOutput
@@ -259,11 +253,15 @@ public class Intake extends SubsystemBase {
   public void periodic() {
 
     if (hardwareEnabled && closedloopControl) {
+      // Velocity (in rotations per second by default)
+      double rps = rollerLeft.getVelocity().getValueAsDouble();
 
-      double rpm = rollerLeft.getEncoder().getVelocity();
+      // Convert to RPM to match your old code
+      double rpm = rps * 60.0;
       rollerRpm = rpm;
-      double current = rollerLeft.getOutputCurrent();
 
+      // Supply current (what you usually want)
+      double current = rollerLeft.getSupplyCurrent().getValueAsDouble();
       boolean jamDetected =
           Math.abs(rpm) < jamVelocityThreshold.get()
               && Math.abs(current) > jamCurrentThreshold.get();
@@ -374,12 +372,12 @@ public class Intake extends SubsystemBase {
   // Arm
 
   public void deploy() {
-    moveToAngle(3);
+    moveToAngle(-3);
     intake();
   }
 
   public void retract() {
-    moveToAngle(100);
+    moveToAngle(110);
     stopRollers();
   }
 
@@ -434,15 +432,17 @@ public class Intake extends SubsystemBase {
     setRollerVelocity(0);
   }
 
+  private final VelocityVoltage rollerVelocityRequest = new VelocityVoltage(0);
+
   private void setRollerVelocity(double rpm) {
 
     if (!hardwareEnabled) return;
 
     rollerCommanded = rpm;
 
-    rollerLeftPID.setReference(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    double rps = rpm / 60.0;
 
-    rollerRightPID.setReference(-rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    rollerLeft.setControl(rollerVelocityRequest.withVelocity(rps));
   }
 
   /* ===================== Logging ===================== */
@@ -457,8 +457,9 @@ public class Intake extends SubsystemBase {
 
     if (hardwareEnabled) {
       armSupplyCurrent = armLeader.getSupplyCurrent().getValueAsDouble();
-      rollerLeftCurrent = rollerLeft.getOutputCurrent();
-      rollerRightCurrent = rollerRight.getOutputCurrent();
+      rollerLeftCurrent = rollerLeft.getSupplyCurrent().getValueAsDouble();
+      // rollerLeftCurrent = rollerLeft.getOutputCurrent();
+      // rollerRightCurrent = rollerRight.getOutputCurrent();
       armAngle = getArmDegrees();
       appliedVoltage = armLeader.getMotorVoltage().getValueAsDouble();
     }

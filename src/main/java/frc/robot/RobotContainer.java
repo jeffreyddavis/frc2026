@@ -35,7 +35,6 @@ import frc.robot.subsystems.*;
 import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -65,7 +64,7 @@ public class RobotContainer {
   private final JoystickButton retractArm = new JoystickButton(stick, 4);
 
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
-  private final JoystickButton agitateIntake = new JoystickButton(stick, 8);
+  private final JoystickButton agitateIntake = new JoystickButton(stick, 14);
 
   private final POVButton hoodUp = new POVButton(stick, 0);
   private final POVButton hoodDown = new POVButton(stick, 180);
@@ -76,7 +75,7 @@ public class RobotContainer {
   private final JoystickButton shooterEnable = new JoystickButton(stick, 9);
   private final JoystickButton passMode = new JoystickButton(stick, 10);
 
-  private final JoystickButton resetGyro = new JoystickButton(stick, 14);
+  private final JoystickButton resetGyro = new JoystickButton(stick, 8);
 
   private final ShootingCoordinator coordinator;
   private final Shooter shooter;
@@ -220,8 +219,8 @@ public class RobotContainer {
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
 
-    // agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
-    agitateIntake.onTrue(new StartShooter(shooter));
+    agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
+    // resetGyro.onTrue(new StartShooter(shooter));
 
     // shooter.setDefaultCommand(Commands.runOnce(() -> shooter.disable(), shooter));
     // spindexer.setDefaultCommand(Commands.runOnce(() -> spindexer.feed(), spindexer));
@@ -357,7 +356,6 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  @AutoLogOutput
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }

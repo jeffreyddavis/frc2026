@@ -83,6 +83,8 @@ public final class Constants {
     public static final double FORBIDDEN_LIMIT_DEG = 180.0;
     public static final double FORBIDDEN_BUFFER_DEG = 5.0; // safety margin
 
+    public static final double startingDegrees = 28;
+
     public static final double TURRET_MAX_DEG = 135;
     public static final double TURRET_MIN_DEG = -15;
     public static final double GEAR_RATIO = 10.0; // example
@@ -94,8 +96,8 @@ public final class Constants {
     public static final double toleranceDeg = .1;
     public static final double OMEGA_LOOKAHEAD = .26;
 
-
-    public static final Translation2d turretOffset = new Translation2d(-Units.inchesToMeters(3.75), Units.inchesToMeters(3.75));
+    public static final Translation2d turretOffset =
+        new Translation2d(-Units.inchesToMeters(3.75), Units.inchesToMeters(3.75));
   }
 
   public static final class Loader {

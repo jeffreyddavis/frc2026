@@ -11,11 +11,10 @@ import java.util.stream.Collectors;
 /**
  * TurretCameraSubsystem
  *
- * Self-contained vision system for:
- *  - turret-relative yaw aiming
- *  - distance-to-hub calculation using AprilTags
+ * <p>Self-contained vision system for: - turret-relative yaw aiming - distance-to-hub calculation
+ * using AprilTags
  *
- * DOES NOT depend on global pose estimator.
+ * <p>DOES NOT depend on global pose estimator.
  */
 public class TurretCamera extends SubsystemBase {
 
@@ -27,8 +26,7 @@ public class TurretCamera extends SubsystemBase {
 
   // ===================== DEPENDENCIES =====================
 
-  private final AprilTagFieldLayout layout =
-      AprilTagLayoutType.OFFICIAL.getLayout();
+  private final AprilTagFieldLayout layout = AprilTagLayoutType.OFFICIAL.getLayout();
 
   // You must provide this
   private final TurretSupplier turretSupplier;
@@ -46,9 +44,7 @@ public class TurretCamera extends SubsystemBase {
 
   // ===================== CONSTRUCTOR =====================
 
-  public TurretCamera(
-      TurretSupplier turretSupplier,
-      VisionSupplier visionSupplier) {
+  public TurretCamera(TurretSupplier turretSupplier, VisionSupplier visionSupplier) {
 
     this.turretSupplier = turretSupplier;
     this.visionSupplier = visionSupplier;
@@ -79,22 +75,17 @@ public class TurretCamera extends SubsystemBase {
       Transform3d cameraToTag = target.getBestCameraToTarget();
 
       // ===================== STEP 1: camera pose =====================
-      Pose3d cameraPose =
-          tagPose.transformBy(cameraToTag.inverse());
+      Pose3d cameraPose = tagPose.transformBy(cameraToTag.inverse());
 
       // ===================== STEP 2: robot pose =====================
-      Transform3d robotToCamera =
-          getRobotToCameraTransform(turretSupplier.getTurretAngleRad());
+      Transform3d robotToCamera = getRobotToCameraTransform(turretSupplier.getTurretAngleRad());
 
-      Pose3d robotPose =
-          cameraPose.transformBy(robotToCamera.inverse());
+      Pose3d robotPose = cameraPose.transformBy(robotToCamera.inverse());
 
       // ===================== STEP 3: distance =====================
-      Translation2d robotXY =
-          robotPose.getTranslation().toTranslation2d();
+      Translation2d robotXY = robotPose.getTranslation().toTranslation2d();
 
-      Translation2d hubXY =
-          FieldConstants.Hub.topCenterPoint.toTranslation2d();
+      Translation2d hubXY = FieldConstants.Hub.topCenterPoint.toTranslation2d();
 
       double distance = robotXY.getDistance(hubXY);
 
@@ -139,27 +130,22 @@ public class TurretCamera extends SubsystemBase {
 
   // ===================== TRANSFORMS =====================
 
-  /**
-   * Computes robot -> camera transform based on turret rotation.
-   */
+  /** Computes robot -> camera transform based on turret rotation. */
   private Transform3d getRobotToCameraTransform(double turretAngleRad) {
 
     // TODO: Replace these with your real constants
-    Transform3d robotToTurret = new Transform3d(
-        new Translation3d(0.0, 0.0, 0.0),
-        new Rotation3d());
+    Transform3d robotToTurret = new Transform3d(new Translation3d(0.0, 0.0, 0.0), new Rotation3d());
 
-    Transform3d turretToCamera = new Transform3d(
-        new Translation3d(0.2, 0.0, 0.3), // example
-        new Rotation3d());
+    Transform3d turretToCamera =
+        new Transform3d(
+            new Translation3d(0.2, 0.0, 0.3), // example
+            new Rotation3d());
 
-    Rotation3d turretRotation =
-        new Rotation3d(0, 0, turretAngleRad);
+    Rotation3d turretRotation = new Rotation3d(0, 0, turretAngleRad);
 
     Transform3d rotatedTurretToCamera =
         new Transform3d(
-            turretToCamera.getTranslation(),
-            turretRotation.plus(turretToCamera.getRotation()));
+            turretToCamera.getTranslation(), turretRotation.plus(turretToCamera.getRotation()));
 
     return robotToTurret.plus(rotatedTurretToCamera);
   }
@@ -203,26 +189,22 @@ public class TurretCamera extends SubsystemBase {
 
   // ===================== INTERFACES =====================
 
-  /**
-   * Abstract turret dependency
-   */
+  /** Abstract turret dependency */
   public interface TurretSupplier {
     double getTurretAngleRad();
   }
 
-  /**
-   * Abstract vision dependency
-   */
+  /** Abstract vision dependency */
   public interface VisionSupplier {
     List<VisionTarget> getTargets();
   }
 
-  /**
-   * Minimal target interface (adapt to Photon/Limelight/etc.)
-   */
+  /** Minimal target interface (adapt to Photon/Limelight/etc.) */
   public interface VisionTarget {
     int getFiducialId();
+
     Transform3d getBestCameraToTarget();
+
     double getYaw(); // degrees
   }
 }
