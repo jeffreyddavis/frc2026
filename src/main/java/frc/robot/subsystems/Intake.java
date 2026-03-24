@@ -373,6 +373,11 @@ public class Intake extends SubsystemBase {
     intake();
   }
 
+  public void barge() { // this is called a barge because Jeffery couldn't remember "depot". 
+    moveToAngle(Constants.Intake.deployBarge);
+    intake();
+  }
+
   public void retract() {
     moveToAngle(Constants.Intake.retractAngle);
     stopRollers();

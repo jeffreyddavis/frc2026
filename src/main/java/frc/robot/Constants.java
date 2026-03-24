@@ -125,6 +125,7 @@ public final class Constants {
     public static final boolean HardwareEnabled = true;
 
     public static final double deployAngle = -3;
+    public static final double deployBarge = 5;
     public static final double retractAngle = 110;
     public static final double readyAngle = 125;
     public static final double safeAngle = 100;

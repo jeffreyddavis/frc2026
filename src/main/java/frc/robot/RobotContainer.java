@@ -197,6 +197,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("IntakeIn", new IntakeIn(intake));
 
+    NamedCommands.registerCommand("IntakeBarge", new IntakeBarge(intake));
+
     NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator, spindexer));
 
     NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter, spindexer));
