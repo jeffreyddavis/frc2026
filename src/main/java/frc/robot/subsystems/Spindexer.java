@@ -5,11 +5,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-import edu.wpi.first.wpilibj.Timer;
 
 public class Spindexer extends SubsystemBase {
 
@@ -33,7 +33,7 @@ public class Spindexer extends SubsystemBase {
       new LoggedNetworkNumber("Spindexer/SupplyCurrentLimit", 35.0);
 
   private final LoggedNetworkNumber unjamIntervalSec =
-    new LoggedNetworkNumber("Spindexer/UnjamIntervalSec", 2.0);
+      new LoggedNetworkNumber("Spindexer/UnjamIntervalSec", 2.0);
 
   private final LoggedNetworkNumber unjamDurationSec =
       new LoggedNetworkNumber("Spindexer/UnjamDurationSec", 0.15);
@@ -54,7 +54,7 @@ public class Spindexer extends SubsystemBase {
 
   private FeedState feedState = FeedState.FORWARD;
   private double stateStartTime = 0.0;
-  
+
   // Track transitions
   private boolean feedingActive = false;
 
@@ -84,54 +84,54 @@ public class Spindexer extends SubsystemBase {
   }
 
   @Override
-public void periodic() {
+  public void periodic() {
 
-  double now = Timer.getFPGATimestamp();
+    double now = Timer.getFPGATimestamp();
 
-  // Live-update current limit
-  double newLimit = supplyCurrentLimit.get();
-  if (hardwareEnabled && Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
-    applyCurrentLimit(newLimit);
-    lastAppliedCurrentLimit = newLimit;
-  }
-
-  // ===================== FEED STATE MACHINE =====================
-  if (running && feedingActive) {
-
-    double elapsed = now - cycleStartTime;
-
-    switch (feedState) {
-      case FORWARD:
-        applyPercent(feedPercent.get());
-
-        // Only transition AFTER interval has passed
-        if (elapsed > unjamIntervalSec.get()) {
-          feedState = FeedState.UNJAM;
-          cycleStartTime = now;
-        }
-        break;
-
-      case UNJAM:
-        applyPercent(unjamReversePercent.get());
-
-        if (elapsed > unjamDurationSec.get()) {
-          feedState = FeedState.FORWARD;
-
-          // Restart interval AFTER unjam completes
-          cycleStartTime = now;
-        }
-        break;
+    // Live-update current limit
+    double newLimit = supplyCurrentLimit.get();
+    if (hardwareEnabled && Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
+      applyCurrentLimit(newLimit);
+      lastAppliedCurrentLimit = newLimit;
     }
 
-  } else if (running) {
-    // reverse(), hold(), manual → behave normally
-    applyPercent(commandedPercent);
-  } else {
-    applyPercent(0.0);
-  }
+    // ===================== FEED STATE MACHINE =====================
+    if (running && feedingActive) {
 
-  logTelemetry();
-}
+      double elapsed = now - cycleStartTime;
+
+      switch (feedState) {
+        case FORWARD:
+          applyPercent(feedPercent.get());
+
+          // Only transition AFTER interval has passed
+          if (elapsed > unjamIntervalSec.get()) {
+            feedState = FeedState.UNJAM;
+            cycleStartTime = now;
+          }
+          break;
+
+        case UNJAM:
+          applyPercent(unjamReversePercent.get());
+
+          if (elapsed > unjamDurationSec.get()) {
+            feedState = FeedState.FORWARD;
+
+            // Restart interval AFTER unjam completes
+            cycleStartTime = now;
+          }
+          break;
+      }
+
+    } else if (running) {
+      // reverse(), hold(), manual → behave normally
+      applyPercent(commandedPercent);
+    } else {
+      applyPercent(0.0);
+    }
+
+    logTelemetry();
+  }
 
   /* ===================== Public Control ===================== */
 

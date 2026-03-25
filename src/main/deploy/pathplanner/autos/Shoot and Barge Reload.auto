@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "ExpandAtMatchStart"
+          }
+        },
+        {
           "type": "sequential",
           "data": {
             "commands": [
