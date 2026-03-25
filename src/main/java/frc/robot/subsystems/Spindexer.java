@@ -54,6 +54,12 @@ public class Spindexer extends SubsystemBase {
 
   private FeedState feedState = FeedState.FORWARD;
   private double stateStartTime = 0.0;
+  
+  // Track transitions
+  private boolean feedingActive = false;
+
+  // Timing
+  private double cycleStartTime = 0.0;
 
   public Spindexer() {
 
@@ -90,24 +96,29 @@ public void periodic() {
   }
 
   // ===================== FEED STATE MACHINE =====================
-  if (running && commandedPercent == feedPercent.get()) {
+  if (running && feedingActive) {
+
+    double elapsed = now - cycleStartTime;
 
     switch (feedState) {
       case FORWARD:
         applyPercent(feedPercent.get());
 
-        if (now - stateStartTime > unjamIntervalSec.get()) {
+        // Only transition AFTER interval has passed
+        if (elapsed > unjamIntervalSec.get()) {
           feedState = FeedState.UNJAM;
-          stateStartTime = now;
+          cycleStartTime = now;
         }
         break;
 
       case UNJAM:
         applyPercent(unjamReversePercent.get());
 
-        if (now - stateStartTime > unjamDurationSec.get()) {
+        if (elapsed > unjamDurationSec.get()) {
           feedState = FeedState.FORWARD;
-          stateStartTime = now;
+
+          // Restart interval AFTER unjam completes
+          cycleStartTime = now;
         }
         break;
     }
@@ -129,12 +140,19 @@ public void periodic() {
   }
 
   public void feed() {
-    running = true;
     commandedPercent = feedPercent.get();
 
-    // Initialize state machine when entering feed
-    feedState = FeedState.FORWARD;
-    stateStartTime = Timer.getFPGATimestamp();
+    // Only trigger on transition into feeding
+    if (!feedingActive) {
+      feedingActive = true;
+
+      feedState = FeedState.FORWARD;
+
+      // IMPORTANT: start cycle NOW so we don’t immediately unjam
+      cycleStartTime = Timer.getFPGATimestamp();
+    }
+
+    running = true;
   }
 
   public void reverse() {
@@ -149,6 +167,7 @@ public void periodic() {
 
   public void stop() {
     running = false;
+    feedingActive = false;
     commandedPercent = 0.0;
   }
 
