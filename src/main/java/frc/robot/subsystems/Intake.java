@@ -53,8 +53,9 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber armCurrentLimit =
       new LoggedNetworkNumber("Intake/ArmSupplyLimit", 40.0);
 
-  private final LoggedNetworkNumber intakeRPM =
-      new LoggedNetworkNumber("Intake/RollerIntakeRPM", 2500);
+  // private final LoggedNetworkNumber intakeRPM =
+  //    new LoggedNetworkNumber("Intake/RollerIntakeRPM", 2500);
+  private final double intakeRPM = 5000;
 
   private final LoggedNetworkNumber outtakeRPM =
       new LoggedNetworkNumber("Intake/RollerOuttakeRPM", -1500);
@@ -373,7 +374,7 @@ public class Intake extends SubsystemBase {
     intake();
   }
 
-  public void barge() { // this is called a barge because Jeffery couldn't remember "depot". 
+  public void barge() { // this is called a barge because Jeffery couldn't remember "depot".
     moveToAngle(Constants.Intake.deployBarge);
     intake();
   }
@@ -431,7 +432,7 @@ public class Intake extends SubsystemBase {
 
   // Rollers
   public void intake() {
-    setRollerVelocity(intakeRPM.get());
+    setRollerVelocity(intakeRPM);
   }
 
   public void outtake() {

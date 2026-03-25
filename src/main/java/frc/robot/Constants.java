@@ -138,6 +138,6 @@ public final class Constants {
     public static final double PassRPM = 3820.0;
     public static final double AutoRPM = 3180.0;
     public static final double RPSTolerance = 5.0;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 }

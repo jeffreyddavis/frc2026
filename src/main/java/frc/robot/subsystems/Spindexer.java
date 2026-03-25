@@ -20,7 +20,7 @@ public class Spindexer extends SubsystemBase {
   /* ===================== Tunables ===================== */
 
   private final LoggedNetworkNumber feedPercent =
-      new LoggedNetworkNumber("Spindexer/FeedPercent", 0.5);
+      new LoggedNetworkNumber("Spindexer/FeedPercent", 0.2);
 
   private final LoggedNetworkNumber reversePercent =
       new LoggedNetworkNumber("Spindexer/ReversePercent", -0.4);

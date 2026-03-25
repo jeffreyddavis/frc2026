@@ -184,7 +184,7 @@ public class ShootingCoordinator extends SubsystemBase {
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          hood.setPositionAngle(solution.hoodDegrees() + hoodTrim);
+          hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
           // double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
           shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) * solution.shooterRPM()));
           break;
@@ -199,7 +199,7 @@ public class ShootingCoordinator extends SubsystemBase {
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          hood.setPositionAngle(passSolution.hoodDegrees() + hoodTrim);
+          hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 

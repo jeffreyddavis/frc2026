@@ -60,14 +60,32 @@ public class ShotController {
   public ShotController() {
 
     // Use helper method so bounds auto-update
-    addShotPoint(1.962, new ShotParams(40, 3660.0, 1.2));
-    addShotPoint(1.854, new ShotParams(40.467, 3634.0, 1.25));
-    addShotPoint(2.043, new ShotParams(41, 3634, 1.3));
-    addShotPoint(2.458, new ShotParams(43.2, 3820, 1.3));
-    addShotPoint(3.171, new ShotParams(45.04, 3820, 1.3));
-    addShotPoint(3.842, new ShotParams(52.907, 3820, 1.3));
-    addShotPoint(4.569, new ShotParams(62.2, 3820, 1.3));
-    addShotPoint(4.773, new ShotParams(64.2, 3820, 1.3));
+
+    addShotPoint(0.850, new ShotParams(31, 3634.0, 1.1));
+    addShotPoint(1.287, new ShotParams(36, 3634.0, 1.1));
+    addShotPoint(1.585, new ShotParams(38, 3634.0, 1.1));
+    // addShotPoint(1.654, new ShotParams(17, 3634.0, 1.1));
+    // addShotPoint(1.854, new ShotParams(40.467, 3634.0, 1.25));
+    // addShotPoint(1.962, new ShotParams(44, 3660.0, 1.2));
+
+    // addShotPoint(2.043, new ShotParams(41, 3634, 1.3));
+
+    addShotPoint(2.150, new ShotParams(43, 3682, 1.3));
+
+    addShotPoint(2.407, new ShotParams(45, 3797, 1.3));
+
+    addShotPoint(2.670, new ShotParams(48.3, 3812, 1.3));
+    addShotPoint(2.795, new ShotParams(50, 3820, 1.3));
+    //  addShotPoint(3.465, new ShotParams(59.5, 3820, 1.3));
+    addShotPoint(3.5, new ShotParams(52.5, 3820, 1.3));
+
+    addShotPoint(4.471, new ShotParams(63, 3820, 1.3));
+
+    // addShotPoint(2.458, new ShotParams(43.2, 3820, 1.3));
+    // addShotPoint(3.171, new ShotParams(45.04, 3820, 1.3));
+    // addShotPoint(3.842, new ShotParams(52.907, 3820, 1.3));
+    addShotPoint(4.569, new ShotParams(63.2, 3820, 1.3));
+    addShotPoint(4.773, new ShotParams(65.2, 3820, 1.3));
     addShotPoint(5.112, new ShotParams(58.2, 4320, 1.4));
     addShotPoint(5.463, new ShotParams(60.2, 4641, 1.4));
   }
