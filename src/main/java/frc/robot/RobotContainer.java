@@ -301,7 +301,7 @@ public class RobotContainer {
         new InstantCommand(
             () -> {
               coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM);
-              spindexer.setFeedPercent(.5);
+              spindexer.setFeedPercent(.25);
               // hood.retract();
               // shooter.setTargetRPM(0);
             }));

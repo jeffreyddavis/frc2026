@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+import edu.wpi.first.wpilibj.Timer;
 
 public class Spindexer extends SubsystemBase {
 
@@ -31,11 +32,28 @@ public class Spindexer extends SubsystemBase {
   private final LoggedNetworkNumber supplyCurrentLimit =
       new LoggedNetworkNumber("Spindexer/SupplyCurrentLimit", 35.0);
 
+  private final LoggedNetworkNumber unjamIntervalSec =
+    new LoggedNetworkNumber("Spindexer/UnjamIntervalSec", 2.0);
+
+  private final LoggedNetworkNumber unjamDurationSec =
+      new LoggedNetworkNumber("Spindexer/UnjamDurationSec", 0.15);
+
+  private final LoggedNetworkNumber unjamReversePercent =
+      new LoggedNetworkNumber("Spindexer/UnjamReversePercent", -0.6);
+
   /* ===================== State ===================== */
 
   private double commandedPercent = 0.0;
   private boolean running = false;
   private double lastAppliedCurrentLimit = 0.0;
+
+  private enum FeedState {
+    FORWARD,
+    UNJAM
+  }
+
+  private FeedState feedState = FeedState.FORWARD;
+  private double stateStartTime = 0.0;
 
   public Spindexer() {
 
@@ -60,18 +78,49 @@ public class Spindexer extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
+public void periodic() {
 
-    // Live-update current limit if changed
-    double newLimit = supplyCurrentLimit.get();
-    if (hardwareEnabled && Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
+  double now = Timer.getFPGATimestamp();
 
-      applyCurrentLimit(newLimit);
-      lastAppliedCurrentLimit = newLimit;
+  // Live-update current limit
+  double newLimit = supplyCurrentLimit.get();
+  if (hardwareEnabled && Math.abs(newLimit - lastAppliedCurrentLimit) > 1e-6) {
+    applyCurrentLimit(newLimit);
+    lastAppliedCurrentLimit = newLimit;
+  }
+
+  // ===================== FEED STATE MACHINE =====================
+  if (running && commandedPercent == feedPercent.get()) {
+
+    switch (feedState) {
+      case FORWARD:
+        applyPercent(feedPercent.get());
+
+        if (now - stateStartTime > unjamIntervalSec.get()) {
+          feedState = FeedState.UNJAM;
+          stateStartTime = now;
+        }
+        break;
+
+      case UNJAM:
+        applyPercent(unjamReversePercent.get());
+
+        if (now - stateStartTime > unjamDurationSec.get()) {
+          feedState = FeedState.FORWARD;
+          stateStartTime = now;
+        }
+        break;
     }
 
-    logTelemetry();
+  } else if (running) {
+    // reverse(), hold(), manual → behave normally
+    applyPercent(commandedPercent);
+  } else {
+    applyPercent(0.0);
   }
+
+  logTelemetry();
+}
 
   /* ===================== Public Control ===================== */
 
@@ -82,31 +131,30 @@ public class Spindexer extends SubsystemBase {
   public void feed() {
     running = true;
     commandedPercent = feedPercent.get();
-    applyPercent(commandedPercent);
+
+    // Initialize state machine when entering feed
+    feedState = FeedState.FORWARD;
+    stateStartTime = Timer.getFPGATimestamp();
   }
 
   public void reverse() {
     running = true;
     commandedPercent = reversePercent.get();
-    applyPercent(commandedPercent);
   }
 
   public void hold() {
     running = true;
     commandedPercent = holdPercent.get();
-    applyPercent(commandedPercent);
   }
 
   public void stop() {
     running = false;
     commandedPercent = 0.0;
-    applyPercent(0.0);
   }
 
   public void setManualPercent(double percent) {
     running = true;
     commandedPercent = percent;
-    applyPercent(percent);
   }
 
   private void applyPercent(double percent) {
