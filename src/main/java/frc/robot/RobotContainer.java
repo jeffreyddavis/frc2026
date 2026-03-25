@@ -356,7 +356,7 @@ public class RobotContainer {
 
     deployArm.onTrue(new InstantCommand(() -> intake.deploy()));
 
-    retractArm.onTrue(new InstantCommand(() -> intake.retract()));
+    retractArm.onTrue(new IntakeIn(intake));
 
     /* ================= MANUAL OVERRIDES ================= */
     /*

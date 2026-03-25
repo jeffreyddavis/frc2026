@@ -427,6 +427,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void moveToAngle(double degrees) {
+    isAtAngle = false;
     armTargetDegrees = Math.max(ARM_MIN, Math.min(ARM_MAX, degrees));
   }
 
