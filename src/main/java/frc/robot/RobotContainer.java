@@ -47,12 +47,12 @@ public class RobotContainer {
 
   // Buttons
   private final JoystickButton trigger = new JoystickButton(stick, 1);
-  private final JoystickButton EnableAuto = new JoystickButton(stick, 2);
+  private final JoystickButton EnableAuto = new JoystickButton(stick, 3);
 
   private final JoystickButton intakeIn = new JoystickButton(stick, 5);
   private final JoystickButton intakeReverse = new JoystickButton(stick, 6);
 
-  private final JoystickButton deployArm = new JoystickButton(stick, 3);
+  private final JoystickButton deployArm = new JoystickButton(stick, 2);
   private final JoystickButton retractArm = new JoystickButton(stick, 4);
 
   private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
@@ -66,12 +66,12 @@ public class RobotContainer {
   private final POVButton turretRight = new POVButton(stick, 90);
   private final POVButton turretLeft = new POVButton(stick, 270);
 
-  private final JoystickButton shooterEnable = new JoystickButton(stick, 9);
+  private final JoystickButton startDefense = new JoystickButton(stick, 9);
   private final JoystickButton passMode = new JoystickButton(stick, 10);
 
   private final JoystickButton resetGyro = new JoystickButton(stick, 8);
 
-  private final ShootingCoordinator coordinator;
+  public final ShootingCoordinator coordinator;
   private final Shooter shooter;
   private final Turret turret;
   private final Hood hood;
@@ -203,7 +203,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter, spindexer));
 
-    NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
+    NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, 1.5));
 
     NamedCommands.registerCommand(
         "ExpandAtMatchStart", new ExpandAtMatchStart(intake, hood, turret));
@@ -403,7 +403,8 @@ public class RobotContainer {
             },
             turret));
 
-    shooterEnable.onTrue(new RunCommand(() -> shooter.enableClosedLoop()));
+    // shooterEnable.onTrue(new RunCommand(() -> shooter.enableClosedLoop()));
+    startDefense.onTrue(new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter));
     /*
     passMode.onTrue(
         new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM))); */

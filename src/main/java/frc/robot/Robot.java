@@ -7,8 +7,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -71,7 +69,6 @@ public class Robot extends LoggedRobot {
 
     // Start AdvantageKit logger
     Logger.start();
-
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
@@ -150,13 +147,14 @@ public class Robot extends LoggedRobot {
       autonomousCommand.cancel();
     }
 
-    if (FlipUtil.shouldFlip()) {
-      robotContainer.drive.setPose(
-          new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.k180deg));
-    } else {
-      robotContainer.drive.setPose(
-          new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.kZero));
-    }
+    robotContainer.coordinator.setRequestShot(false); // stop shooting at the start of teleop
+    // if (FlipUtil.shouldFlip()) {
+    //  robotContainer.drive.setPose(
+    //      new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.k180deg));
+    // } else {
+    //  robotContainer.drive.setPose(
+    //      new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.kZero));
+    // }
   }
 
   /** This function is called periodically during operator control. */

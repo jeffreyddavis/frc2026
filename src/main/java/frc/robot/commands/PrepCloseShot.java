@@ -10,7 +10,7 @@ public class PrepCloseShot extends InstantCommand {
         () -> {
           hood.setPositionMm(35);
           shoot.setTargetRPM(4000);
-          spindexer.setFeedPercent(.25);
+          spindexer.setFeedPercent(.15);
         });
   }
 }

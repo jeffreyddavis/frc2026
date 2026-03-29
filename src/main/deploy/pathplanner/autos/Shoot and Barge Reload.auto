@@ -17,19 +17,19 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAimOn"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
                   "name": "StartShooter"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "WaitforShooterReady"
+                  "name": "WaitForShooterReady"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAimOn"
                 }
               },
               {
@@ -42,19 +42,13 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Fire Away and Reload"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Move Over Barge"
+                  "pathName": "Fire Away and Reload"
                 }
               },
               {
@@ -66,10 +60,29 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Shoot"
+                  "name": "StopShoot"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Move Over Barge"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]

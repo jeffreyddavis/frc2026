@@ -86,7 +86,7 @@ public final class Constants {
     public static final double startingDegrees = 28;
     public static final double startPositionEncoderOffset = 0.778;
 
-    public static final double TURRET_MAX_DEG = 135;
+    public static final double TURRET_MAX_DEG = 95;
     public static final double TURRET_MIN_DEG = -28;
     public static final double GEAR_RATIO = 10.0; // example
     public static final boolean HardwareEnabled = true;

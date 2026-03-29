@@ -11,7 +11,7 @@ public class AutoAimOn extends InstantCommand {
     super(
         () -> {
           coordinator.setMode(ShootingMode.AUTO_AIM);
-          spindexer.setFeedPercent(.5);
+          spindexer.setFeedPercent(.25);
         });
   }
 }

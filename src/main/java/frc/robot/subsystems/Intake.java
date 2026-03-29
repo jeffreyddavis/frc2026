@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
 
   // private final LoggedNetworkNumber intakeRPM =
   //    new LoggedNetworkNumber("Intake/RollerIntakeRPM", 2500);
-  private final double intakeRPM = 5000;
+  private final double intakeRPM = 3500;
 
   private final LoggedNetworkNumber outtakeRPM =
       new LoggedNetworkNumber("Intake/RollerOuttakeRPM", -1500);
@@ -70,7 +70,7 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 3);
 
   private final LoggedNetworkNumber jamVelocityThreshold =
-      new LoggedNetworkNumber("Intake/JamVelocityRPM", 300);
+      new LoggedNetworkNumber("Intake/JamVelocityRPM", 600);
 
   private final LoggedNetworkNumber jamCurrentThreshold =
       new LoggedNetworkNumber("Intake/JamCurrent", 35);
@@ -253,6 +253,7 @@ public class Intake extends SubsystemBase {
     if (hardwareEnabled && closedloopControl) {
       // Velocity (in rotations per second by default)
       double rps = rollerLeft.getVelocity().getValueAsDouble();
+      boolean tryingToRun = Math.abs(rollerCommanded) > 1000; // or some % threshold
 
       // Convert to RPM to match your old code
       double rpm = rps * 60.0;
@@ -260,15 +261,14 @@ public class Intake extends SubsystemBase {
 
       // Supply current (what you usually want)
       double current = rollerLeft.getSupplyCurrent().getValueAsDouble();
-      boolean jamDetected =
-          Math.abs(rpm) < jamVelocityThreshold.get()
-              && Math.abs(current) > jamCurrentThreshold.get();
+      boolean jamDetected = Math.abs(rpm) < jamVelocityThreshold.get();
+      // && Math.abs(current) > jamCurrentThreshold.get();
 
-      if (jamDetected) jamTimer += 0.02;
+      if (jamDetected && tryingToRun) jamTimer += 0.02;
       else jamTimer = 0;
 
       if (jamTimer > 0.1 && clearMode == ClearMode.NONE) {
-        // requestJamClear();
+        requestJamClear();
       }
 
       if (clearMode != ClearMode.NONE) {
@@ -322,15 +322,16 @@ public class Intake extends SubsystemBase {
     if (clearMode == ClearMode.JAM) {
 
       if (clearTimer < 0.15) {
-        stopRollers();
-        moveToAngle(80);
-      } else if (clearTimer < 0.35) {
-        moveToAngle(3);
+        // Reverse hard
+        setRollerVelocity(-intakeRPM);
+      } else if (clearTimer < 0.20) {
+        // Optional: brief stop (helps de-tangle)
+        setRollerVelocity(0);
       } else {
+        // Resume intake
         intake();
         clearMode = ClearMode.NONE;
       }
-
     } else if (clearMode == ClearMode.AGITATE) {
 
       intake();

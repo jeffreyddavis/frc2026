@@ -113,9 +113,9 @@ public class ShootingCoordinator extends SubsystemBase {
   private Translation2d getPassTarget() {
 
     // Define in BLUE coordinate space
-    Translation2d bottomCorner = new Translation2d(1.0, 2.0);
+    Translation2d bottomCorner = new Translation2d(3.0, 3.0);
 
-    Translation2d topCorner = new Translation2d(1.0, FieldConstants.fieldWidth - 2.0);
+    Translation2d topCorner = new Translation2d(3.0, FieldConstants.fieldWidth - 3.0);
 
     // Decide which corner is closer to robot
     double robotY = drive.getPose().getY();
@@ -163,7 +163,8 @@ public class ShootingCoordinator extends SubsystemBase {
       case NONE:
       case BLOCKED:
       default:
-        // Do nothing special
+        // keep hood safe if we don't know where we are
+        hood.retract();
         break;
     }
 
@@ -184,9 +185,12 @@ public class ShootingCoordinator extends SubsystemBase {
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
+          // hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
           // double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
-          shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) * solution.shooterRPM()));
+          // shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) *
+          // solution.shooterRPM()));
+          hood.setPositionMm(35);
+          shooter.setTargetRPM(3634);
           break;
 
         case PASS:
@@ -199,7 +203,8 @@ public class ShootingCoordinator extends SubsystemBase {
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
+          // hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
+          hood.retract();
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
