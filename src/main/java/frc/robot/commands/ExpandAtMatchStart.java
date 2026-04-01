@@ -10,7 +10,7 @@ public class ExpandAtMatchStart extends SequentialCommandGroup {
   public ExpandAtMatchStart(Intake intake, Hood hood, Turret turret) {
     addCommands(
         Commands.runOnce(() -> intake.stopRollers(), intake),
-        Commands.runOnce(() -> hood.retract(), hood),
+        Commands.runOnce(() -> hood.neutralPosition(), hood),
         Commands.runOnce(() -> intake.safeAngle(), intake),
         Commands.waitUntil(() -> intake.isAtAngle()),
         Commands.runOnce(() -> turret.setTurretRelativeAngle(0), turret),

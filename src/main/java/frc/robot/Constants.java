@@ -109,6 +109,9 @@ public final class Constants {
   public static final class Hood {
     public static final boolean HardwareEnabled = true;
     public static final double distanceToleranceMM = 1;
+    public static final double maxHood = 85;
+    public static final double minHood = 0;
+    public static final double safeNeutralHood = 35;
   }
 
   public static final class Spindexer {
@@ -136,7 +139,8 @@ public final class Constants {
     public static final int LeftMotor = 36;
     public static final int RightMotor = 35;
     public static final double PassRPM = 3820.0;
-    public static final double AutoRPM = 3180.0;
+    // public static final double AutoRPM = 3180.0;
+    public static final double AutoRPM = 1000.0;
     public static final double RPSTolerance = 5.0;
     public static final boolean HardwareEnabled = true;
   }

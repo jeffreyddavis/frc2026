@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6942499999999994,
-        "y": 6.772196428571428
+        "x": 0.3499464285714282,
+        "y": 5.103964285714286
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.69425,
-        "y": 6.772196428571428
+        "x": 1.1435714285714287,
+        "y": 4.6018750000000015
       },
       "isLocked": false,
       "linkedName": "EndOfBarge"
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -43.531199285614115
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

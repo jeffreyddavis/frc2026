@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
@@ -139,7 +140,7 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     trenchBlocked = robotHealth.hoodDangerNearTrench && !trenchOverrideEnabled;
 
-    if (trenchBlocked) hood.retract();
+    if (trenchBlocked) hood.neutralPosition();
     /*
        if (trenchBlocked) {
          hood.setPositionMm(0);
@@ -185,12 +186,13 @@ public class ShootingCoordinator extends SubsystemBase {
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          // hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
+          hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
           // double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
-          // shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) *
+          if (!DriverStation.isAutonomous())
+            shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) *
           // solution.shooterRPM()));
-          hood.setPositionMm(35);
-          shooter.setTargetRPM(3634);
+          // hood.setPositionMm(35);
+          // shooter.setTargetRPM(3634);
           break;
 
         case PASS:
@@ -204,7 +206,8 @@ public class ShootingCoordinator extends SubsystemBase {
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
           // hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
-          hood.retract();
+          // hood.retract();
+          hood.setPositionMm(35);
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
@@ -212,6 +215,7 @@ public class ShootingCoordinator extends SubsystemBase {
         case BLOCKED:
         default:
           // Do nothing special
+          hood.setPositionMm(35); // safe but ready position
           break;
       }
     }

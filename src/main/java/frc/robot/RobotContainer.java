@@ -232,7 +232,7 @@ public class RobotContainer {
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
 
-    controller.rightTrigger().onTrue(new ReadyMatchPosition(intake, hood, turret));
+    controller.rightTrigger().onTrue(new ReadyCompactPosition(intake, hood, turret));
     controller.leftTrigger().onTrue(new ExpandAtMatchStart(intake, hood, turret));
     controller
         .pov(270)
@@ -253,6 +253,26 @@ public class RobotContainer {
                   turret.jogRight();
                 },
                 turret));
+    controller
+        .pov(0)
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  // coordinator.trimRight();
+                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                  hood.incrementUp();
+                },
+                hood));
+    controller
+        .pov(180)
+        .whileTrue(
+            new RunCommand(
+                () -> {
+                  // coordinator.trimRight();
+                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
+                  hood.incrementDown();
+                },
+                hood));
 
     agitateIntake.onTrue(Commands.runOnce(() -> intake.startTimedAgitate(), intake));
     // resetGyro.onTrue(new StartShooter(shooter));
@@ -312,6 +332,7 @@ public class RobotContainer {
         new InstantCommand(
             () -> {
               coordinator.setRequestShot(true);
+              Commands.runOnce(drive::stopWithX, drive);
               // intake.startAgitate();
             }));
 
@@ -404,7 +425,8 @@ public class RobotContainer {
             turret));
 
     // shooterEnable.onTrue(new RunCommand(() -> shooter.enableClosedLoop()));
-    startDefense.onTrue(new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter));
+    startDefense.onTrue(
+        new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter, coordinator));
     /*
     passMode.onTrue(
         new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM))); */

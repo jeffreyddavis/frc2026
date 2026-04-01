@@ -7,6 +7,8 @@ import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.ShootingCoordinator;
+import frc.robot.subsystems.ShootingCoordinator.ShootingMode;
 import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.Turret;
 
@@ -17,11 +19,13 @@ public class ReadyDefensePosition extends SequentialCommandGroup {
       Turret turret,
       Spindexer spindexer,
       Loader loader,
-      Shooter shooter) {
+      Shooter shooter,
+      ShootingCoordinator coordinator) {
     addCommands(
-        Commands.runOnce(() -> turret.zeroTurret()),
+        // Commands.runOnce(() -> turret.zeroTurret()),
+        Commands.runOnce(() -> coordinator.setMode(ShootingMode.MANUAL), coordinator),
         Commands.runOnce(() -> intake.stopRollers(), intake),
-        Commands.runOnce(() -> hood.retract(), hood),
+        Commands.runOnce(() -> hood.neutralPosition(), hood),
         Commands.runOnce(() -> intake.safeAngle(), intake),
         Commands.waitUntil(() -> intake.isAtAngle()),
         Commands.runOnce(

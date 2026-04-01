@@ -51,6 +51,8 @@ public class Hood extends SubsystemBase {
 
   public void setPositionMm(double positionMm) {
 
+    positionMm = MathUtil.clamp(positionMm, Constants.Hood.minHood, Constants.Hood.maxHood);
+
     // Estimate time to move
     double distance = Math.abs(positionMm - lastCommandedMm);
     // if (distance <= Constants.Hood.distanceToleranceMM)
@@ -87,6 +89,11 @@ public class Hood extends SubsystemBase {
   public void retract() {
     m_leftHood.retract();
     m_rightHood.retract();
+  }
+
+  public void neutralPosition() {
+    m_leftHood.setPositionMm(Constants.Hood.safeNeutralHood);
+    m_rightHood.setPositionMm(Constants.Hood.safeNeutralHood);
   }
 
   public void extendFully() {
