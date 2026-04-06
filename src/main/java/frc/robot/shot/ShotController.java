@@ -79,15 +79,17 @@ public class ShotController {
     //  addShotPoint(3.465, new ShotParams(59.5, 3820, 1.3));
     addShotPoint(3.5, new ShotParams(52.5, 3820, 1.3));
 
-    addShotPoint(4.471, new ShotParams(63, 3820, 1.3));
+    addShotPoint(4.471, new ShotParams(60, 4000, 1.3));
 
     // addShotPoint(2.458, new ShotParams(43.2, 3820, 1.3));
     // addShotPoint(3.171, new ShotParams(45.04, 3820, 1.3));
     // addShotPoint(3.842, new ShotParams(52.907, 3820, 1.3));
-    addShotPoint(4.569, new ShotParams(63.2, 3820, 1.3));
-    addShotPoint(4.773, new ShotParams(65.2, 3820, 1.3));
-    addShotPoint(5.112, new ShotParams(58.2, 4320, 1.4));
-    addShotPoint(5.463, new ShotParams(60.2, 4641, 1.4));
+    // addShotPoint(4.569, new ShotParams(60, 4200, 1.3));
+    // addShotPoint(4.773, new ShotParams(60, 4300, 1.3));
+    // addShotPoint(5.112, new ShotParams(60, 4320, 1.4));
+    addShotPoint(5.463, new ShotParams(60, 4641, 1.4));
+    addShotPoint(7, new ShotParams(60, 6500, 1.4));
+    addShotPoint(8, new ShotParams(60, 6500, 1.4));
   }
 
   private void addShotPoint(double distance, ShotParams params) {

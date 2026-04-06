@@ -318,13 +318,7 @@ public class RobotContainer {
     /* ================= AUTO AIM MODE ================= */
 
     EnableAuto.onTrue(
-        new InstantCommand(
-            () -> {
-              coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM);
-              spindexer.setFeedPercent(.25);
-              // hood.retract();
-              // shooter.setTargetRPM(0);
-            }));
+        new ReadyOffense(intake, hood, turret, spindexer, loader, shooter, coordinator));
 
     /* ================= SHOOT REQUEST ================= */
 

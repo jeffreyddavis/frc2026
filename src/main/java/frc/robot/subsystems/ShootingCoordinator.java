@@ -29,6 +29,11 @@ public class ShootingCoordinator extends SubsystemBase {
 
   public static boolean trenchOverrideEnabled = false;
 
+  @AutoLogOutput private Translation2d bottomCorner;
+  @AutoLogOutput private Translation2d topCorner;
+
+  @AutoLogOutput Translation2d chosen;
+
   /* ===================== Tunable Targets ===================== */
 
   // You can move these to Constants later if desired
@@ -114,20 +119,23 @@ public class ShootingCoordinator extends SubsystemBase {
   private Translation2d getPassTarget() {
 
     // Define in BLUE coordinate space
-    Translation2d bottomCorner = new Translation2d(3.0, 3.0);
+    bottomCorner = new Translation2d(3.0, 3.0);
 
-    Translation2d topCorner = new Translation2d(3.0, FieldConstants.fieldWidth - 3.0);
+    topCorner = new Translation2d(3.0, FieldConstants.fieldWidth - 3.0);
 
     // Decide which corner is closer to robot
     double robotY = drive.getPose().getY();
 
-    Translation2d chosen =
+    chosen =
         Math.abs(robotY - bottomCorner.getY()) < Math.abs(robotY - topCorner.getY())
             ? bottomCorner
             : topCorner;
 
     // Flip automatically for red alliance
-    return FlipUtil.apply(chosen);
+    // return chosen;
+    chosen = new Translation2d(FlipUtil.applyX(chosen.getX()), chosen.getY());
+    return chosen;
+    // return FlipUtil.applyX(chosen);
   }
 
   @Override
@@ -205,9 +213,9 @@ public class ShootingCoordinator extends SubsystemBase {
                 drive.getRotation(),
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
-          // hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
+          hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
           // hood.retract();
-          hood.setPositionMm(35);
+          // hood.setPositionMm(35);
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
