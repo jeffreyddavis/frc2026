@@ -25,12 +25,6 @@
                 "data": {
                   "name": "WaitforShooterReady"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Shoot"
-                }
               }
             ]
           }
@@ -39,6 +33,12 @@
           "type": "path",
           "data": {
             "pathName": "Fire Away and Move Back"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]

@@ -196,8 +196,10 @@ public class ShootingCoordinator extends SubsystemBase {
           }
           hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
           // double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
-          if (!DriverStation.isAutonomous())
-            shooter.setTargetRPM(solution.shooterRPM()); // + ((trim / 100) *
+          if (!DriverStation.isAutonomous()) shooter.setTargetRPM(solution.shooterRPM());
+          else shooter.setTargetRPM(500);
+
+          // + ((trim / 100) *
           // solution.shooterRPM()));
           // hood.setPositionMm(35);
           // shooter.setTargetRPM(3634);

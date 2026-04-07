@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
 
   // private final LoggedNetworkNumber intakeRPM =
   //    new LoggedNetworkNumber("Intake/RollerIntakeRPM", 2500);
-  private final double intakeRPM = 3100;
+  private final double intakeRPM = 3300;
 
   private final LoggedNetworkNumber outtakeRPM =
       new LoggedNetworkNumber("Intake/RollerOuttakeRPM", -1500);
@@ -70,7 +70,7 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber maxVolts = new LoggedNetworkNumber("Intake/maxVolts", 3);
 
   private final LoggedNetworkNumber jamVelocityThreshold =
-      new LoggedNetworkNumber("Intake/JamVelocityRPM", 200);
+      new LoggedNetworkNumber("Intake/JamVelocityRPM", 5);
 
   private final LoggedNetworkNumber jamCurrentThreshold =
       new LoggedNetworkNumber("Intake/JamCurrent", 35);

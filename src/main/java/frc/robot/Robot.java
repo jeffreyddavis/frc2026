@@ -148,6 +148,7 @@ public class Robot extends LoggedRobot {
     }
 
     robotContainer.coordinator.setRequestShot(false); // stop shooting at the start of teleop
+    robotContainer.DefenseMode();
     // if (FlipUtil.shouldFlip()) {
     //  robotContainer.drive.setPose(
     //      new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.k180deg));

@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -49,13 +50,13 @@ public class RobotContainer {
   private final JoystickButton trigger = new JoystickButton(stick, 1);
   private final JoystickButton EnableAuto = new JoystickButton(stick, 3);
 
-  private final JoystickButton intakeIn = new JoystickButton(stick, 5);
-  private final JoystickButton intakeReverse = new JoystickButton(stick, 6);
+  //  private final JoystickButton intakeIn = new JoystickButton(stick, 5);
+  // private final JoystickButton intakeReverse = new JoystickButton(stick, 6);
 
   private final JoystickButton deployArm = new JoystickButton(stick, 2);
   private final JoystickButton retractArm = new JoystickButton(stick, 4);
 
-  private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
+  // private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
   private final JoystickButton agitateIntake = new JoystickButton(stick, 14);
 
   private final JoystickButton resetTurret = new JoystickButton(stick, 11);
@@ -66,8 +67,8 @@ public class RobotContainer {
   private final POVButton turretRight = new POVButton(stick, 90);
   private final POVButton turretLeft = new POVButton(stick, 270);
 
-  private final JoystickButton startDefense = new JoystickButton(stick, 9);
-  private final JoystickButton passMode = new JoystickButton(stick, 10);
+  private final JoystickButton startDefense = new JoystickButton(stick, 10);
+  // private final JoystickButton passMode = new JoystickButton(stick, 10);
 
   private final JoystickButton resetGyro = new JoystickButton(stick, 8);
 
@@ -193,6 +194,9 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("StopShoot", new StopShoot(loader, spindexer));
 
+    NamedCommands.registerCommand(
+        "StopAutoShoot", new InstantCommand(() -> coordinator.setRequestShot(false), coordinator));
+
     NamedCommands.registerCommand("IntakeOut", new IntakeOut(intake));
 
     NamedCommands.registerCommand("IntakeIn", new IntakeIn(intake));
@@ -203,10 +207,14 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter, spindexer));
 
-    NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, 1.5));
+    NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
 
     NamedCommands.registerCommand(
         "ExpandAtMatchStart", new ExpandAtMatchStart(intake, hood, turret));
+
+    NamedCommands.registerCommand(
+        "DefenseMode",
+        new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter, coordinator));
   }
 
   private void configureButtonBindings() {
@@ -424,6 +432,13 @@ public class RobotContainer {
     /*
     passMode.onTrue(
         new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM))); */
+  }
+
+  public void DefenseMode() {
+
+    ReadyDefensePosition a =
+        new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter, coordinator);
+    CommandScheduler.getInstance().schedule(a);
   }
 
   /**
