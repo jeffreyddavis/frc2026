@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.342624999999998,
-        "y": 8.537607142857144
+        "x": 5.970107142857143,
+        "y": 7.954535714285715
       },
       "isLocked": false,
       "linkedName": "LeftShootSpot"
@@ -20,8 +20,8 @@
         "y": 4.699053571428571
       },
       "prevControl": {
-        "x": 6.310232142857143,
-        "y": 7.711589285714284
+        "x": 6.342624999999999,
+        "y": 7.501035714285713
       },
       "nextControl": null,
       "isLocked": false,
