@@ -1,15 +1,10 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.*;
@@ -30,12 +25,13 @@ public class QuestNavSub extends SubsystemBase {
   private Drive m_swerve;
   @AutoLogOutput private Pose2d questPose2d;
   @AutoLogOutput public Pose2d questRobotPose2d;
+  /*
   private Matrix<N3, N1> QUESTNAV_STD_DEVS =
       VecBuilder.fill(
           0.02, // Trust down to 2cm in X direction
           0.02, // Trust down to 2cm in Y direction
           0.035 // Trust down to 2 degrees rotational
-          );
+          ); */
 
   // First, Declare our geometrical transform from the robot center to the Quest
   private Transform3d ROBOT_TO_QUEST =
@@ -80,7 +76,7 @@ public class QuestNavSub extends SubsystemBase {
           Pose3d questPose = questFrame.questPose3d();
           questPose2d = questPose.toPose2d();
           // Get timestamp for when the data was sent
-          double timestamp = questFrame.dataTimestamp();
+          //double timestamp = questFrame.dataTimestamp();
 
           // Transform by the mount pose to get your robot pose
           Pose3d robotPose = questPose.transformBy(ROBOT_TO_QUEST.inverse());

@@ -23,7 +23,6 @@ public class DriveToPointVector extends Command {
 
   private static final double MIN_SPEED = 0.25; // m/s
   private static final double SLOW_RADIUS = 1.0; // meters
-  private static final double STOP_RADIUS = 0.12; // meters
 
   public DriveToPointVector(
       Drive drive, Pose2d target, double max_speed) { // 3 m/s is a good starting point

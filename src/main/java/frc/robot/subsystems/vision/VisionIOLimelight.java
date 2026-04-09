@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.*;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import java.util.*;
 import java.util.function.Supplier;
@@ -21,7 +20,6 @@ public class VisionIOLimelight implements VisionIO {
   private final DoubleSubscriber tySubscriber;
 
   private final DoubleArraySubscriber megatag1Subscriber;
-  private final DoubleArraySubscriber megatag2Subscriber;
 
   private String m_name;
 
@@ -38,8 +36,8 @@ public class VisionIOLimelight implements VisionIO {
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
 
     megatag1Subscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[] {});
-    megatag2Subscriber =
-        table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
+    //megatag2Subscriber =
+    //    table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
   }
 
   public String getName() {
@@ -114,7 +112,7 @@ public class VisionIOLimelight implements VisionIO {
     }
 
     // ===================== OPTIONAL MEGATAG2 =====================
-
+/*
     if (false && DriverStation.isEnabled()) {
       for (var rawSample : megatag2Subscriber.readQueue()) {
         if (rawSample.value.length == 0) continue;
@@ -135,7 +133,7 @@ public class VisionIOLimelight implements VisionIO {
                 avgDistance,
                 PoseObservationType.MEGATAG_2));
       }
-    }
+    } */
 
     // ===================== SAVE OUTPUT =====================
 

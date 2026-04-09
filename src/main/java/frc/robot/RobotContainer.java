@@ -79,7 +79,7 @@ public class RobotContainer {
   public final Intake intake;
   private final Loader loader;
   private final Spindexer spindexer;
-  public final QuestNavSub m_QuestNav;
+  //public final QuestNavSub m_QuestNav;
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -102,7 +102,6 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 turret,
-                drive,
                 new VisionIOLimelight(camera0Name, drive::getRotation),
                 new VisionIOLimelight(camera1Name, drive::getRotation),
                 new VisionIOLimelight(camera2Name, drive::getRotation));
@@ -121,7 +120,7 @@ public class RobotContainer {
 
         vision =
             new Vision(
-                drive::addVisionMeasurement, turret, drive, new VisionIO() {}, new VisionIO() {});
+                drive::addVisionMeasurement, turret, new VisionIO() {}, new VisionIO() {});
         break;
 
       default:
@@ -135,7 +134,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision =
             new Vision(
-                drive::addVisionMeasurement, turret, drive, new VisionIO() {}, new VisionIO() {});
+                drive::addVisionMeasurement, turret, new VisionIO() {}, new VisionIO() {});
         break;
     }
 
@@ -156,7 +155,7 @@ public class RobotContainer {
     //  autoChooser.addOption(
     ///      "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    m_QuestNav = new QuestNavSub(drive);
+    //m_QuestNav = new QuestNavSub(drive);
 
     // Instantiate subsystems
     shooter = new Shooter();
@@ -168,7 +167,7 @@ public class RobotContainer {
     shotController = new ShotController();
     shotController.forceDisableTuning();
 
-    RobotHealth robotHealth = new RobotHealth(drive, m_QuestNav, vision);
+    RobotHealth robotHealth = new RobotHealth(drive, /*m_QuestNav,*/ vision);
 
     coordinator =
         new ShootingCoordinator(
@@ -195,7 +194,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("StopShoot", new StopShoot(loader, spindexer));
 
     NamedCommands.registerCommand(
-        "StopAutoShoot", new InstantCommand(() -> coordinator.setRequestShot(false), coordinator));
+        "StopAutoShoot", new StopShootAuto(coordinator, hood));
 
     NamedCommands.registerCommand("IntakeOut", new IntakeOut(intake));
 
@@ -209,6 +208,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
 
+    NamedCommands.registerCommand("WaitForHoodReady", new WaitForHoodReady(hood, 1.2));
     NamedCommands.registerCommand(
         "ExpandAtMatchStart", new ExpandAtMatchStart(intake, hood, turret));
 

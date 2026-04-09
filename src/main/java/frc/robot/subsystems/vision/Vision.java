@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Turret;
-import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import java.util.LinkedList;
@@ -45,7 +44,6 @@ public class Vision extends SubsystemBase {
   private final VisionIOInputs[] inputs; // change to something new
   private final Alert[] disconnectedAlerts;
   private Turret turret;
-  private Drive drive;
 
   @AutoLogOutput public boolean isAllowedToSend = true;
 
@@ -57,11 +55,10 @@ public class Vision extends SubsystemBase {
 
   @AutoLogOutput private double lastGoodDistance = 0.0;
 
-  public Vision(VisionConsumer consumer, Turret turret, Drive drive, VisionIO... io) {
+  public Vision(VisionConsumer consumer, Turret turret, VisionIO... io) {
     this.consumer = consumer;
     this.io = io;
     this.turret = turret;
-    this.drive = drive;
 
     // Initialize inputs
     this.inputs = new VisionIOInputs[io.length];

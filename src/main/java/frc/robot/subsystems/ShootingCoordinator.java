@@ -34,11 +34,6 @@ public class ShootingCoordinator extends SubsystemBase {
 
   @AutoLogOutput Translation2d chosen;
 
-  /* ===================== Tunable Targets ===================== */
-
-  // You can move these to Constants later if desired
-  private static final double SHOOT_HOOD_MM = 45.0;
-  private static final double PASS_HOOD_MM = 20.0;
 
   /* ===================== Subsystems ===================== */
 
@@ -57,10 +52,8 @@ public class ShootingCoordinator extends SubsystemBase {
   private boolean requestShot = false;
   @AutoLogOutput private ShotType currentShotType = ShotType.NONE;
 
-  private double shotRequestStartTime = 0;
-  private boolean timingShot = false;
-  private static final double SHOOT_FALLBACK_TIME = 0.6; // seconds
-
+  //private boolean timingShot = false;
+  
   @AutoLogOutput private Translation2d target;
   @AutoLogOutput private Translation2d Unflippedtarget;
 
@@ -148,7 +141,9 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     trenchBlocked = robotHealth.hoodDangerNearTrench && !trenchOverrideEnabled;
 
-    if (trenchBlocked) hood.neutralPosition();
+    if (trenchBlocked 
+      && !DriverStation.isAutonomous()) // allow autoshots.
+      hood.neutralPosition();
     /*
        if (trenchBlocked) {
          hood.setPositionMm(0);
@@ -173,7 +168,7 @@ public class ShootingCoordinator extends SubsystemBase {
       case BLOCKED:
       default:
         // keep hood safe if we don't know where we are
-        hood.retract();
+        hood.neutralPosition();
         break;
     }
 
@@ -195,14 +190,10 @@ public class ShootingCoordinator extends SubsystemBase {
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
           hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
-          // double trim = (currentMode == ShootingMode.AUTO_AIM) ? rpmTrimPercent.get() : 0.0;
-          if (!DriverStation.isAutonomous()) shooter.setTargetRPM(solution.shooterRPM());
-          else shooter.setTargetRPM(500);
+          //if (!DriverStation.isAutonomous()) 
+          shooter.setTargetRPM(solution.shooterRPM());
+          // else shooter.setTargetRPM(500);
 
-          // + ((trim / 100) *
-          // solution.shooterRPM()));
-          // hood.setPositionMm(35);
-          // shooter.setTargetRPM(3634);
           break;
 
         case PASS:
@@ -216,8 +207,6 @@ public class ShootingCoordinator extends SubsystemBase {
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
           hood.setPositionMm(passSolution.hoodDegrees() + hoodTrim);
-          // hood.retract();
-          // hood.setPositionMm(35);
           shooter.setTargetRPM(passSolution.shooterRPM());
           break;
 
@@ -225,13 +214,13 @@ public class ShootingCoordinator extends SubsystemBase {
         case BLOCKED:
         default:
           // Do nothing special
-          hood.setPositionMm(35); // safe but ready position
+          hood.neutralPosition();
           break;
       }
     }
 
-    double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-
+    //double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+/*
     if (requestShot && !timingShot) {
       shotRequestStartTime = now;
       timingShot = true;
@@ -239,14 +228,14 @@ public class ShootingCoordinator extends SubsystemBase {
 
     if (!requestShot) {
       timingShot = false;
-    }
+    } */
 
     // boolean shooterReady = shooter.isAtSetpoint();
-    boolean shooterReady = true;
+    //boolean shooterReady = true;
 
-    boolean timeoutReady = timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
+    //boolean timeoutReady = timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
 
-    boolean speedGate = shooterReady || timeoutReady;
+    //boolean speedGate = shooterReady || timeoutReady;
 
     // ----------------------------
     // Readiness Check
@@ -277,8 +266,8 @@ public class ShootingCoordinator extends SubsystemBase {
 
   private ShotType determineShotType() {
 
-    boolean trenchBlocked =
-        (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
+    //boolean trenchBlocked =
+    //    (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
 
     // if (trenchBlocked) {
     //  return ShotType.BLOCKED;

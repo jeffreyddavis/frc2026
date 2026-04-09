@@ -64,12 +64,6 @@
         {
           "type": "named",
           "data": {
-            "name": "StartShooter"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "WaitForShooterReady"
           }
         },
@@ -82,19 +76,25 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 2.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopAutoShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitForHoodReady"
           }
         },
         {
           "type": "parallel",
           "data": {
             "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "StopAutoShoot"
-                }
-              },
               {
                 "type": "path",
                 "data": {
@@ -125,14 +125,20 @@
                 "data": {
                   "pathName": "2nd Attempt"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "AutoAimOn"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAimOn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitForShooterReady"
           }
         },
         {
