@@ -12,7 +12,6 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -40,10 +39,10 @@ public class Intake extends SubsystemBase {
   private TalonFX rollerLeft;
   // private SparkFlex rollerRight;
 
-  //private RelativeEncoder rollerLeftEncoder;
+  // private RelativeEncoder rollerLeftEncoder;
   // private RelativeEncoder rollerRightEncoder;
 
-  //private SparkClosedLoopController rollerLeftPID;
+  // private SparkClosedLoopController rollerLeftPID;
   // private SparkClosedLoopController rollerRightPID;
 
   /* ===================== Tunables ===================== */
@@ -71,7 +70,7 @@ public class Intake extends SubsystemBase {
   private final LoggedNetworkNumber jamVelocityThreshold =
       new LoggedNetworkNumber("Intake/JamVelocityRPM", 5);
 
-  //private final LoggedNetworkNumber jamCurrentThreshold =
+  // private final LoggedNetworkNumber jamCurrentThreshold =
   //    new LoggedNetworkNumber("Intake/JamCurrent", 35);
 
   private final LoggedNetworkNumber agitateHighAngle =
@@ -258,7 +257,7 @@ public class Intake extends SubsystemBase {
       rollerRpm = rpm;
 
       // Supply current (what you usually want)
-      //double current = rollerLeft.getSupplyCurrent().getValueAsDouble();
+      // double current = rollerLeft.getSupplyCurrent().getValueAsDouble();
       boolean jamDetected = Math.abs(rpm) < jamVelocityThreshold.get();
       // && Math.abs(current) > jamCurrentThreshold.get();
 
@@ -467,7 +466,7 @@ public class Intake extends SubsystemBase {
 
     double armSupplyCurrent = 0.0;
     double rollerLeftCurrent = 0.0;
-    //double rollerRightCurrent = 0.0;
+    // double rollerRightCurrent = 0.0;
     double appliedVoltage = 0;
     double armAngle = 0.0;
 

@@ -29,7 +29,7 @@ public class RobotHealth extends SubsystemBase {
   @AutoLogOutput public boolean inActiveShift = false;
 
   private Drive m_Drivetrain;
- // private QuestNavSub m_QuestNav;
+  // private QuestNavSub m_QuestNav;
   private Vision m_Vision;
 
   @AutoLogOutput private Pose2d lastPose2d;
@@ -190,17 +190,17 @@ public class RobotHealth extends SubsystemBase {
     return fieldStatus;
   }
 
-  public RobotHealth(Drive drivetrain/*, QuestNavSub questNaviman */, Vision vision) {
+  public RobotHealth(Drive drivetrain /*, QuestNavSub questNaviman */, Vision vision) {
     m_Drivetrain = drivetrain;
-   // m_QuestNav = questNaviman;
+    // m_QuestNav = questNaviman;
     m_Vision = vision;
     lastPose2d = drivetrain.getPose();
   }
 
   private boolean poseTimeout() {
     return !m_Drivetrain.gyroConnected;
-      /*  && !m_QuestNav.questNav.isConnected()
-        && !m_QuestNav.questNav.isTracking(); */
+    /*  && !m_QuestNav.questNav.isConnected()
+    && !m_QuestNav.questNav.isTracking(); */
   }
 
   private boolean YawDisagreement() {

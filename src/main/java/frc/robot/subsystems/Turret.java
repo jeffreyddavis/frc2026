@@ -245,7 +245,7 @@ public class Turret extends SubsystemBase {
     double target = normalizeToSigned(targetDeg);
     // 176 compared to -176
 
-    //double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
+    // double maxAllowed = 180 - Constants.Turret.FORBIDDEN_BUFFER_DEG;
     //
     target =
         MathUtil.clamp(target, Constants.Turret.TURRET_MIN_DEG, Constants.Turret.TURRET_MAX_DEG);

@@ -36,7 +36,7 @@ public class VisionIOLimelight implements VisionIO {
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
 
     megatag1Subscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[] {});
-    //megatag2Subscriber =
+    // megatag2Subscriber =
     //    table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
   }
 
@@ -112,7 +112,7 @@ public class VisionIOLimelight implements VisionIO {
     }
 
     // ===================== OPTIONAL MEGATAG2 =====================
-/*
+    /*
     if (false && DriverStation.isEnabled()) {
       for (var rawSample : megatag2Subscriber.readQueue()) {
         if (rawSample.value.length == 0) continue;

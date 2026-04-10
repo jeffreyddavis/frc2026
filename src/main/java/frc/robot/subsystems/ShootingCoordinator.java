@@ -34,7 +34,6 @@ public class ShootingCoordinator extends SubsystemBase {
 
   @AutoLogOutput Translation2d chosen;
 
-
   /* ===================== Subsystems ===================== */
 
   private final Shooter shooter;
@@ -52,8 +51,8 @@ public class ShootingCoordinator extends SubsystemBase {
   private boolean requestShot = false;
   @AutoLogOutput private ShotType currentShotType = ShotType.NONE;
 
-  //private boolean timingShot = false;
-  
+  // private boolean timingShot = false;
+
   @AutoLogOutput private Translation2d target;
   @AutoLogOutput private Translation2d Unflippedtarget;
 
@@ -141,9 +140,8 @@ public class ShootingCoordinator extends SubsystemBase {
     // ----------------------------
     trenchBlocked = robotHealth.hoodDangerNearTrench && !trenchOverrideEnabled;
 
-    if (trenchBlocked 
-      && !DriverStation.isAutonomous()) // allow autoshots.
-      hood.neutralPosition();
+    if (trenchBlocked && !DriverStation.isAutonomous()) // allow autoshots.
+    hood.neutralPosition();
     /*
        if (trenchBlocked) {
          hood.setPositionMm(0);
@@ -190,7 +188,7 @@ public class ShootingCoordinator extends SubsystemBase {
                 Math.toDegrees(drive.getChassisSpeeds().omegaRadiansPerSecond));
           }
           hood.setPositionMm(solution.hoodDegrees() + hoodTrim);
-          //if (!DriverStation.isAutonomous()) 
+          // if (!DriverStation.isAutonomous())
           shooter.setTargetRPM(solution.shooterRPM());
           // else shooter.setTargetRPM(500);
 
@@ -219,8 +217,8 @@ public class ShootingCoordinator extends SubsystemBase {
       }
     }
 
-    //double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-/*
+    // double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+    /*
     if (requestShot && !timingShot) {
       shotRequestStartTime = now;
       timingShot = true;
@@ -231,11 +229,11 @@ public class ShootingCoordinator extends SubsystemBase {
     } */
 
     // boolean shooterReady = shooter.isAtSetpoint();
-    //boolean shooterReady = true;
+    // boolean shooterReady = true;
 
-    //boolean timeoutReady = timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
+    // boolean timeoutReady = timingShot && (now - shotRequestStartTime > SHOOT_FALLBACK_TIME);
 
-    //boolean speedGate = shooterReady || timeoutReady;
+    // boolean speedGate = shooterReady || timeoutReady;
 
     // ----------------------------
     // Readiness Check
@@ -266,7 +264,7 @@ public class ShootingCoordinator extends SubsystemBase {
 
   private ShotType determineShotType() {
 
-    //boolean trenchBlocked =
+    // boolean trenchBlocked =
     //    (robotHealth.inTrenchZones || robotHealth.hoodDangerNearTrench) && !trenchOverrideEnabled;
 
     // if (trenchBlocked) {

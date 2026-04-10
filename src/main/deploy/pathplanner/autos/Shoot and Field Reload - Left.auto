@@ -86,9 +86,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "WaitForHoodReady"
+            "waitTime": 0.8
           }
         },
         {

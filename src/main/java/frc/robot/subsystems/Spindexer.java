@@ -53,7 +53,7 @@ public class Spindexer extends SubsystemBase {
   }
 
   private FeedState feedState = FeedState.FORWARD;
- // private double stateStartTime = 0.0;
+  // private double stateStartTime = 0.0;
 
   // Track transitions
   private boolean feedingActive = false;
