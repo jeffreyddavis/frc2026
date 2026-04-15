@@ -13,29 +13,98 @@
                 "data": {
                   "name": "ExpandAtMatchStart"
                 }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "AutoAimOn"
+                  "pathName": "Right Side Fire Away and Field Reload - Entry"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "StartShooter"
+                  "name": "IntakeOut"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Right Side Fire Away and Field Reload - Return"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "WaitForShooterReady"
+                  "name": "IntakeIn"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAimOn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WaitForShooterReady"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopAutoShoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.7
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Right 2nd Swipe"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Shoot"
+                  "name": "IntakeOut"
                 }
               }
             ]
@@ -50,20 +119,26 @@
                 "data": {
                   "name": "IntakeIn"
                 }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Right 2nd Attempt"
+                }
               }
             ]
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Fire Away and Field Reload Flipped - Entry"
+            "name": "AutoAimOn"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Fire Away and Field Reload Flipped - Return"
+            "name": "WaitForShooterReady"
           }
         },
         {
