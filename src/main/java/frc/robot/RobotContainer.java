@@ -39,8 +39,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   public final Drive drive;
-  private final Vision vision;
+  public final Vision vision;
   private final ShotController shotController;
+
+  public boolean DefenseMode = false;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(1);
@@ -79,6 +81,7 @@ public class RobotContainer {
   public final Intake intake;
   private final Loader loader;
   private final Spindexer spindexer;
+  public RobotHealth robotHealth;
   // public final QuestNavSub m_QuestNav;
 
   // Dashboard inputs
@@ -165,7 +168,7 @@ public class RobotContainer {
     shotController = new ShotController();
     shotController.forceDisableTuning();
 
-    RobotHealth robotHealth = new RobotHealth(drive, /*m_QuestNav,*/ vision);
+    robotHealth = new RobotHealth(drive, /*m_QuestNav,*/ vision);
 
     coordinator =
         new ShootingCoordinator(
@@ -211,7 +214,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "DefenseMode",
-        new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter, coordinator));
+        new ReadyDefensePosition(
+            intake, hood, turret, spindexer, loader, shooter, coordinator, this));
   }
 
   private void configureButtonBindings() {
@@ -323,7 +327,7 @@ public class RobotContainer {
     /* ================= AUTO AIM MODE ================= */
 
     EnableAuto.onTrue(
-        new ReadyOffense(intake, hood, turret, spindexer, loader, shooter, coordinator));
+        new ReadyOffense(intake, hood, turret, spindexer, loader, shooter, coordinator, this));
 
     /* ================= SHOOT REQUEST ================= */
 
@@ -425,7 +429,8 @@ public class RobotContainer {
 
     // shooterEnable.onTrue(new RunCommand(() -> shooter.enableClosedLoop()));
     startDefense.onTrue(
-        new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter, coordinator));
+        new ReadyDefensePosition(
+            intake, hood, turret, spindexer, loader, shooter, coordinator, this));
     /*
     passMode.onTrue(
         new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM))); */
@@ -434,7 +439,8 @@ public class RobotContainer {
   public void DefenseMode() {
 
     ReadyDefensePosition a =
-        new ReadyDefensePosition(intake, hood, turret, spindexer, loader, shooter, coordinator);
+        new ReadyDefensePosition(
+            intake, hood, turret, spindexer, loader, shooter, coordinator, this);
     CommandScheduler.getInstance().schedule(a);
   }
 

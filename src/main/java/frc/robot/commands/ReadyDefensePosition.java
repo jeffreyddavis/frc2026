@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
@@ -20,8 +21,10 @@ public class ReadyDefensePosition extends SequentialCommandGroup {
       Spindexer spindexer,
       Loader loader,
       Shooter shooter,
-      ShootingCoordinator coordinator) {
+      ShootingCoordinator coordinator,
+      RobotContainer container) {
     addCommands(
+        Commands.runOnce(() -> container.DefenseMode = true),
         // Commands.runOnce(() -> turret.zeroTurret()),
         Commands.runOnce(() -> coordinator.setMode(ShootingMode.MANUAL), coordinator),
         Commands.runOnce(() -> intake.stopRollers(), intake),

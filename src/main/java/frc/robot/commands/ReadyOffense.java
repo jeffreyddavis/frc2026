@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Loader;
@@ -19,10 +20,11 @@ public class ReadyOffense extends SequentialCommandGroup {
       Spindexer spindexer,
       Loader loader,
       Shooter shooter,
-      ShootingCoordinator coordinator) {
+      ShootingCoordinator coordinator,
+      RobotContainer container) {
     addCommands(
         // Commands.runOnce(() -> turret.zeroTurret()),
-
+        Commands.runOnce(() -> container.DefenseMode = false),
         Commands.runOnce(() -> intake.safeAngle(), intake),
         Commands.runOnce(() -> shooter.enableClosedLoop(), loader),
         Commands.runOnce(() -> coordinator.setMode(ShootingMode.AUTO_AIM), coordinator),
