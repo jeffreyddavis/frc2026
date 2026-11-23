@@ -116,7 +116,7 @@ public final class Constants {
 
   public static final class Spindexer {
     public static final int Motor = 50;
-    public static final boolean HardwareEnabled = false;
+    public static final boolean HardwareEnabled = true;
   }
 
   public static final class Intake {
