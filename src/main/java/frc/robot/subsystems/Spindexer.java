@@ -16,7 +16,8 @@ public class Spindexer extends SubsystemBase {
   private final boolean hardwareEnabled = Constants.Spindexer.HardwareEnabled;
 
   private TalonFX motor;
-  private final VoltageOut voltageOut = new VoltageOut(0.0);
+  // Use standard commutation so this request works without a Phoenix Pro license.
+  private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(false);
 
   /* ===================== Tunables ===================== */
 
