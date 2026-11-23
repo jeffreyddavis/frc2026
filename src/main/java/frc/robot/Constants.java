@@ -45,7 +45,7 @@ public final class Constants {
   public static final class Drivetrain {
     // Front Left Module
     public static final int FL_Drive = 1;
-    public static final int FL_Steer = 2;
+    public static final int FL_Steer = 30;
     public static final int FL_Encoder = 3;
 
     // Front Right Module
@@ -76,7 +76,7 @@ public final class Constants {
   }
 
   public static final class Turret {
-    public static final int Motor = 30;
+    public static final int Motor = 2;
     public static final int Encoder = 31;
     public static final double TestSpeed = .1;
     public static final double EncoderOffset = 0;
@@ -89,7 +89,7 @@ public final class Constants {
     public static final double TURRET_MAX_DEG = 95;
     public static final double TURRET_MIN_DEG = -28;
     public static final double GEAR_RATIO = 10.0; // example
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
 
     public static final double kP = .007;
     public static final double kS = .2;
@@ -103,11 +103,11 @@ public final class Constants {
 
   public static final class Loader {
     public static final int Motor = 40;
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Hood {
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
     public static final double distanceToleranceMM = 1;
     public static final double maxHood = 85;
     public static final double minHood = 0;
@@ -116,7 +116,7 @@ public final class Constants {
 
   public static final class Spindexer {
     public static final int Motor = 50;
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
   }
 
   public static final class Intake {
@@ -125,7 +125,7 @@ public final class Constants {
     public static final int ArmEncoder = 55;
     public static final int RollerLeft = 53;
     public static final int RollerRight = 54;
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
 
     public static final double deployAngle = -3;
     public static final double deployBarge = 5;
@@ -142,6 +142,6 @@ public final class Constants {
     // public static final double AutoRPM = 3180.0;
     public static final double AutoRPM = 1000.0;
     public static final double RPSTolerance = 5.0;
-    public static final boolean HardwareEnabled = true;
+    public static final boolean HardwareEnabled = false;
   }
 }

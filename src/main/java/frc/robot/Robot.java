@@ -8,7 +8,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 // import frc.robot.subsystems.QuestNavSub.PositionStatus;
@@ -148,8 +147,6 @@ public class Robot extends LoggedRobot {
       autonomousCommand.cancel();
     }
 
-    robotContainer.coordinator.setRequestShot(false); // stop shooting at the start of teleop
-    robotContainer.DefenseMode();
     // if (FlipUtil.shouldFlip()) {
     //  robotContainer.drive.setPose(
     //      new Pose2d(robotContainer.drive.getPose().getTranslation(), Rotation2d.k180deg));
@@ -171,10 +168,7 @@ public class Robot extends LoggedRobot {
     }
   }
 
-  public void updatedashboard() {
-    SmartDashboard.putBoolean("Defense Mode", robotContainer.DefenseMode);
-    SmartDashboard.putNumber("Good Cameras", robotContainer.vision.camerasWithPoseCount);
-  }
+  public void updatedashboard() {}
 
   /** This function is called once when test mode is enabled. */
   @Override

@@ -106,11 +106,12 @@ public class Turret extends SubsystemBase {
   }
 
   public boolean isAtSetpoint() {
-    if (!hardwareEnabled) return false;
+    return true;
+    // if (!hardwareEnabled) return false;
 
-    double current = getTurretAngleDegrees();
-    double target = targetAngleDeg;
-    return Math.abs(current - target) < Constants.Turret.toleranceDeg; // toleranceDeg.get();
+    // double current = getTurretAngleDegrees();
+    // double target = targetAngleDeg;
+    // return Math.abs(current - target) < Constants.Turret.toleranceDeg; // toleranceDeg.get();
   }
 
   /* ===================== Core Logic ===================== */
@@ -170,7 +171,7 @@ public class Turret extends SubsystemBase {
       desiredOut += Math.signum(percent) * Constants.Turret.kS; // kSVolts.get();
     }
 
-    voltageOut.Output = desiredOut;
+    voltageOut.Output = 0.0; // desiredOut;
     motor.setControl(voltageOut);
   }
 

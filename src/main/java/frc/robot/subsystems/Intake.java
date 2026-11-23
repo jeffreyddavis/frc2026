@@ -303,7 +303,9 @@ public class Intake extends SubsystemBase {
       // Clamp
       voltage = Math.max(-maxVolts.get(), Math.min(maxVolts.get(), voltage));
 
+      voltage = 0.0;
       armVoltage.Output = voltage;
+
       armLeader.setControl(armVoltage);
 
       lastError = error;
@@ -383,7 +385,8 @@ public class Intake extends SubsystemBase {
   }
 
   public boolean isAtAngle() {
-    return isAtAngle;
+    return true;
+    // return isAtAngle;
   }
 
   public void safeAngle() {
@@ -406,7 +409,7 @@ public class Intake extends SubsystemBase {
   private void setArmPercent(double percent) {
     if (!hardwareEnabled) return;
 
-    armVoltage.Output = percent * 12.0;
+    armVoltage.Output = 0.0; // percent * 12.0;
     armLeader.setControl(armVoltage);
   }
 
@@ -452,6 +455,8 @@ public class Intake extends SubsystemBase {
   private void setRollerVelocity(double rpm) {
 
     if (!hardwareEnabled) return;
+
+    rpm = 0;
 
     rollerCommanded = rpm;
 

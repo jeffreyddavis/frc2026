@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -39,7 +38,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   public final Drive drive;
-  public final Vision vision;
+  // public final Vision vision;
   private final ShotController shotController;
 
   public boolean DefenseMode = false;
@@ -61,22 +60,22 @@ public class RobotContainer {
   // private final JoystickButton manualSpindexer = new JoystickButton(stick, 7);
   private final JoystickButton agitateIntake = new JoystickButton(stick, 14);
 
-  private final JoystickButton resetTurret = new JoystickButton(stick, 11);
+  // private final JoystickButton resetTurret = new JoystickButton(stick, 11);
 
   private final POVButton hoodUp = new POVButton(stick, 0);
   private final POVButton hoodDown = new POVButton(stick, 180);
 
-  private final POVButton turretRight = new POVButton(stick, 90);
-  private final POVButton turretLeft = new POVButton(stick, 270);
+  // private final POVButton turretRight = new POVButton(stick, 90);
+  // private final POVButton turretLeft = new POVButton(stick, 270);
 
   private final JoystickButton startDefense = new JoystickButton(stick, 10);
   // private final JoystickButton passMode = new JoystickButton(stick, 10);
 
   private final JoystickButton resetGyro = new JoystickButton(stick, 8);
 
-  public final ShootingCoordinator coordinator;
+  // public final ShootingCoordinator coordinator;
   private final Shooter shooter;
-  private final Turret turret;
+  // private final Turret turret;
   private final Hood hood;
   public final Intake intake;
   private final Loader loader;
@@ -90,7 +89,7 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
 
-    turret = new Turret();
+    // = new Turret();
     switch (Constants.currentMode) {
       case REAL:
         drive =
@@ -100,14 +99,6 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                turret,
-                new VisionIOLimelight(camera0Name, drive::getRotation),
-                new VisionIOLimelight(camera1Name, drive::getRotation),
-                new VisionIOLimelight(camera2Name, drive::getRotation));
 
         break;
 
@@ -121,8 +112,6 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
-        vision =
-            new Vision(drive::addVisionMeasurement, turret, new VisionIO() {}, new VisionIO() {});
         break;
 
       default:
@@ -134,8 +123,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision =
-            new Vision(drive::addVisionMeasurement, turret, new VisionIO() {}, new VisionIO() {});
+
         break;
     }
 
@@ -168,12 +156,6 @@ public class RobotContainer {
     shotController = new ShotController();
     shotController.forceDisableTuning();
 
-    robotHealth = new RobotHealth(drive, /*m_QuestNav,*/ vision);
-
-    coordinator =
-        new ShootingCoordinator(
-            shooter, turret, hood, loader, spindexer, robotHealth, shotController, drive);
-
     // Configure the button bindings
     configureButtonBindings();
     addNamedCommands();
@@ -190,11 +172,7 @@ public class RobotContainer {
   private void addNamedCommands() {
     NamedCommands.registerCommand("StartShooter", new StartShooter(shooter));
 
-    NamedCommands.registerCommand("Shoot", new ShootAuto(coordinator));
-
     NamedCommands.registerCommand("StopShoot", new StopShoot(loader, spindexer));
-
-    NamedCommands.registerCommand("StopAutoShoot", new StopShootAuto(coordinator, hood));
 
     NamedCommands.registerCommand("IntakeOut", new IntakeOut(intake));
 
@@ -202,20 +180,11 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("IntakeBarge", new IntakeBarge(intake));
 
-    NamedCommands.registerCommand("AutoAimOn", new AutoAimOn(coordinator, spindexer));
-
     NamedCommands.registerCommand("PrepCloseShot", new PrepCloseShot(hood, shooter, spindexer));
 
     NamedCommands.registerCommand("WaitForShooterReady", new WaitForShooterReady(shooter, .5));
 
     NamedCommands.registerCommand("WaitForHoodReady", new WaitForHoodReady(hood, 2));
-    NamedCommands.registerCommand(
-        "ExpandAtMatchStart", new ExpandAtMatchStart(intake, hood, turret));
-
-    NamedCommands.registerCommand(
-        "DefenseMode",
-        new ReadyDefensePosition(
-            intake, hood, turret, spindexer, loader, shooter, coordinator, this));
   }
 
   private void configureButtonBindings() {
@@ -241,34 +210,15 @@ public class RobotContainer {
     controller.a().onTrue(Commands.runOnce(() -> shooter.jogPercent(.01)));
     controller.b().onTrue(Commands.runOnce(() -> shooter.jogPercent(-.01)));
 
-    controller.rightTrigger().onTrue(new ReadyCompactPosition(intake, hood, turret));
-    controller.leftTrigger().onTrue(new ExpandAtMatchStart(intake, hood, turret));
-    controller
-        .pov(270)
-        .whileTrue(
-            new RunCommand(
-                () -> {
-                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-                  turret.jogLeft();
-                  // coordinator.trimLeft();
-                }));
-    controller
-        .pov(90)
-        .whileTrue(
-            new RunCommand(
-                () -> {
-                  // coordinator.trimRight();
-                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
-                  turret.jogRight();
-                },
-                turret));
+    controller.pov(270);
+    controller.pov(90);
+
     controller
         .pov(0)
         .whileTrue(
             new RunCommand(
                 () -> {
                   // coordinator.trimRight();
-                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
                   hood.incrementUp();
                 },
                 hood));
@@ -278,7 +228,6 @@ public class RobotContainer {
             new RunCommand(
                 () -> {
                   // coordinator.trimRight();
-                  coordinator.setMode(ShootingCoordinator.ShootingMode.MANUAL);
                   hood.incrementDown();
                 },
                 hood));
@@ -315,26 +264,13 @@ public class RobotContainer {
                 drive)
             .ignoringDisable(true));
 
-    resetTurret.onTrue(
-        Commands.runOnce(
-                () -> {
-                  turret.zeroTurret();
-                  turret.setTurretRelativeAngle(0);
-                },
-                turret)
-            .ignoringDisable(true));
-
     /* ================= AUTO AIM MODE ================= */
-
-    EnableAuto.onTrue(
-        new ReadyOffense(intake, hood, turret, spindexer, loader, shooter, coordinator, this));
 
     /* ================= SHOOT REQUEST ================= */
 
     trigger.onTrue(
         new InstantCommand(
             () -> {
-              coordinator.setRequestShot(true);
               Commands.runOnce(drive::stopWithX, drive);
               // intake.startAgitate();
             }));
@@ -342,7 +278,6 @@ public class RobotContainer {
     trigger.onFalse(
         new InstantCommand(
             () -> {
-              coordinator.setRequestShot(false);
               //  intake.stopAgitate();
             }));
 
@@ -397,7 +332,6 @@ public class RobotContainer {
             () -> {
               // coordinator.setMode(ShootingMode.MANUAL);
               // hood.extendFully();
-              coordinator.incrementUp();
               // hood.incrementUp();
             }));
 
@@ -406,42 +340,9 @@ public class RobotContainer {
             () -> {
               // coordinator.setMode(ShootingMode.MANUAL);
               // hood.retract();
-              coordinator.incrementDown();
               // hood.incrementDown();
             }));
-
-    turretLeft.whileTrue(
-        new RunCommand(
-            () -> {
-              // coordinator.setMode(ShootingMode.MANUAL);
-              // turret.jogLeft();
-              coordinator.trimLeft();
-            }));
-
-    turretRight.whileTrue(
-        new RunCommand(
-            () -> {
-              coordinator.trimRight();
-              // coordinator.setMode(ShootingMode.MANUAL);
-              // turret.jogRight();
-            },
-            turret));
-
     // shooterEnable.onTrue(new RunCommand(() -> shooter.enableClosedLoop()));
-    startDefense.onTrue(
-        new ReadyDefensePosition(
-            intake, hood, turret, spindexer, loader, shooter, coordinator, this));
-    /*
-    passMode.onTrue(
-        new InstantCommand(() -> coordinator.setMode(ShootingCoordinator.ShootingMode.AUTO_AIM))); */
-  }
-
-  public void DefenseMode() {
-
-    ReadyDefensePosition a =
-        new ReadyDefensePosition(
-            intake, hood, turret, spindexer, loader, shooter, coordinator, this);
-    CommandScheduler.getInstance().schedule(a);
   }
 
   /**
